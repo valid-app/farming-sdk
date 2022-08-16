@@ -1,4 +1,4 @@
-define('@ijstech/farming-sdk', (require, exports)=>{
+define('@validapp/farming-sdk', (require, exports)=>{
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -72,7 +72,7 @@ var ERC20 = class extends import_eth_wallet.Contract {
     this.assign();
   }
   deploy(params) {
-    return this._deploy(params.name, params.symbol);
+    return this.__deploy([params.name, params.symbol]);
   }
   parseApprovalEvent(receipt) {
     return this.parseEvents(receipt, "Approval").map((e) => this.decodeApprovalEvent(e));
@@ -98,76 +98,98 @@ var ERC20 = class extends import_eth_wallet.Contract {
       _event: event
     };
   }
-  async allowance(params) {
-    let result = await this.call("allowance", [params.owner, params.spender]);
-    return new import_eth_wallet.BigNumber(result);
-  }
-  async approve_send(params) {
-    let result = await this.send("approve", [params.spender, import_eth_wallet.Utils.toString(params.amount)]);
-    return result;
-  }
-  async approve_call(params) {
-    let result = await this.call("approve", [params.spender, import_eth_wallet.Utils.toString(params.amount)]);
-    return result;
-  }
-  async balanceOf(account) {
-    let result = await this.call("balanceOf", [account]);
-    return new import_eth_wallet.BigNumber(result);
-  }
-  async decimals() {
-    let result = await this.call("decimals");
-    return new import_eth_wallet.BigNumber(result);
-  }
-  async decreaseAllowance_send(params) {
-    let result = await this.send("decreaseAllowance", [params.spender, import_eth_wallet.Utils.toString(params.subtractedValue)]);
-    return result;
-  }
-  async decreaseAllowance_call(params) {
-    let result = await this.call("decreaseAllowance", [params.spender, import_eth_wallet.Utils.toString(params.subtractedValue)]);
-    return result;
-  }
-  async increaseAllowance_send(params) {
-    let result = await this.send("increaseAllowance", [params.spender, import_eth_wallet.Utils.toString(params.addedValue)]);
-    return result;
-  }
-  async increaseAllowance_call(params) {
-    let result = await this.call("increaseAllowance", [params.spender, import_eth_wallet.Utils.toString(params.addedValue)]);
-    return result;
-  }
-  async name() {
-    let result = await this.call("name");
-    return result;
-  }
-  async symbol() {
-    let result = await this.call("symbol");
-    return result;
-  }
-  async totalSupply() {
-    let result = await this.call("totalSupply");
-    return new import_eth_wallet.BigNumber(result);
-  }
-  async transfer_send(params) {
-    let result = await this.send("transfer", [params.recipient, import_eth_wallet.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transfer_call(params) {
-    let result = await this.call("transfer", [params.recipient, import_eth_wallet.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transferFrom_send(params) {
-    let result = await this.send("transferFrom", [params.sender, params.recipient, import_eth_wallet.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transferFrom_call(params) {
-    let result = await this.call("transferFrom", [params.sender, params.recipient, import_eth_wallet.Utils.toString(params.amount)]);
-    return result;
-  }
   assign() {
-    this.approve = Object.assign(this.approve_send, { call: this.approve_call });
-    this.decreaseAllowance = Object.assign(this.decreaseAllowance_send, { call: this.decreaseAllowance_call });
-    this.increaseAllowance = Object.assign(this.increaseAllowance_send, { call: this.increaseAllowance_call });
-    this.transfer = Object.assign(this.transfer_send, { call: this.transfer_call });
-    this.transferFrom = Object.assign(this.transferFrom_send, { call: this.transferFrom_call });
+    let allowanceParams = (params) => [params.owner, params.spender];
+    let allowance_call = async (params) => {
+      let result = await this.call("allowance", allowanceParams(params));
+      return new import_eth_wallet.BigNumber(result);
+    };
+    this.allowance = allowance_call;
+    let balanceOf_call = async (account) => {
+      let result = await this.call("balanceOf", [account]);
+      return new import_eth_wallet.BigNumber(result);
+    };
+    this.balanceOf = balanceOf_call;
+    let decimals_call = async () => {
+      let result = await this.call("decimals");
+      return new import_eth_wallet.BigNumber(result);
+    };
+    this.decimals = decimals_call;
+    let name_call = async () => {
+      let result = await this.call("name");
+      return result;
+    };
+    this.name = name_call;
+    let symbol_call = async () => {
+      let result = await this.call("symbol");
+      return result;
+    };
+    this.symbol = symbol_call;
+    let totalSupply_call = async () => {
+      let result = await this.call("totalSupply");
+      return new import_eth_wallet.BigNumber(result);
+    };
+    this.totalSupply = totalSupply_call;
+    let approveParams = (params) => [params.spender, import_eth_wallet.Utils.toString(params.amount)];
+    let approve_send = async (params) => {
+      let result = await this.send("approve", approveParams(params));
+      return result;
+    };
+    let approve_call = async (params) => {
+      let result = await this.call("approve", approveParams(params));
+      return result;
+    };
+    this.approve = Object.assign(approve_send, {
+      call: approve_call
+    });
+    let decreaseAllowanceParams = (params) => [params.spender, import_eth_wallet.Utils.toString(params.subtractedValue)];
+    let decreaseAllowance_send = async (params) => {
+      let result = await this.send("decreaseAllowance", decreaseAllowanceParams(params));
+      return result;
+    };
+    let decreaseAllowance_call = async (params) => {
+      let result = await this.call("decreaseAllowance", decreaseAllowanceParams(params));
+      return result;
+    };
+    this.decreaseAllowance = Object.assign(decreaseAllowance_send, {
+      call: decreaseAllowance_call
+    });
+    let increaseAllowanceParams = (params) => [params.spender, import_eth_wallet.Utils.toString(params.addedValue)];
+    let increaseAllowance_send = async (params) => {
+      let result = await this.send("increaseAllowance", increaseAllowanceParams(params));
+      return result;
+    };
+    let increaseAllowance_call = async (params) => {
+      let result = await this.call("increaseAllowance", increaseAllowanceParams(params));
+      return result;
+    };
+    this.increaseAllowance = Object.assign(increaseAllowance_send, {
+      call: increaseAllowance_call
+    });
+    let transferParams = (params) => [params.recipient, import_eth_wallet.Utils.toString(params.amount)];
+    let transfer_send = async (params) => {
+      let result = await this.send("transfer", transferParams(params));
+      return result;
+    };
+    let transfer_call = async (params) => {
+      let result = await this.call("transfer", transferParams(params));
+      return result;
+    };
+    this.transfer = Object.assign(transfer_send, {
+      call: transfer_call
+    });
+    let transferFromParams = (params) => [params.sender, params.recipient, import_eth_wallet.Utils.toString(params.amount)];
+    let transferFrom_send = async (params) => {
+      let result = await this.send("transferFrom", transferFromParams(params));
+      return result;
+    };
+    let transferFrom_call = async (params) => {
+      let result = await this.call("transferFrom", transferFromParams(params));
+      return result;
+    };
+    this.transferFrom = Object.assign(transferFrom_send, {
+      call: transferFrom_call
+    });
   }
 };
 
@@ -236,7 +258,7 @@ var Farming = class extends import_eth_wallet2.Contract {
     this.assign();
   }
   deploy(params) {
-    return this._deploy(import_eth_wallet2.Utils.toString(params.rewardPerBlock), import_eth_wallet2.Utils.toString(params.startBlock), import_eth_wallet2.Utils.toString(params.endBlock), params.admin);
+    return this.__deploy([import_eth_wallet2.Utils.toString(params.rewardPerBlock), import_eth_wallet2.Utils.toString(params.startBlock), import_eth_wallet2.Utils.toString(params.endBlock), params.admin]);
   }
   parseAuthChangedEvent(receipt) {
     return this.parseEvents(receipt, "AuthChanged").map((e) => this.decodeAuthChangedEvent(e));
@@ -382,272 +404,339 @@ var Farming = class extends import_eth_wallet2.Contract {
       _event: event
     };
   }
-  async addPool_send(params) {
-    let result = await this.send("addPool", [import_eth_wallet2.Utils.toString(params.allocPoint), params.lpToken, import_eth_wallet2.Utils.toString(params.endBlock), import_eth_wallet2.Utils.toString(params.bonusMultiplier), import_eth_wallet2.Utils.toString(params.bonusEndBlock), params.withUpdate]);
-    return result;
-  }
-  async addPool_call(params) {
-    let result = await this.call("addPool", [import_eth_wallet2.Utils.toString(params.allocPoint), params.lpToken, import_eth_wallet2.Utils.toString(params.endBlock), import_eth_wallet2.Utils.toString(params.bonusMultiplier), import_eth_wallet2.Utils.toString(params.bonusEndBlock), params.withUpdate]);
-    return;
-  }
-  async addRewards_send(params) {
-    let result = await this.send("addRewards", [params.rewardToken, import_eth_wallet2.Utils.toString(params.multiplier), import_eth_wallet2.Utils.toString(params.vestingRatio), params.vestingStartOnHarvest, import_eth_wallet2.Utils.toString(params.vestingDuration)]);
-    return result;
-  }
-  async addRewards_call(params) {
-    let result = await this.call("addRewards", [params.rewardToken, import_eth_wallet2.Utils.toString(params.multiplier), import_eth_wallet2.Utils.toString(params.vestingRatio), params.vestingStartOnHarvest, import_eth_wallet2.Utils.toString(params.vestingDuration)]);
-    return;
-  }
-  async admin() {
-    let result = await this.call("admin");
-    return result;
-  }
-  async adminWithdrawReward_send(rewardId) {
-    let result = await this.send("adminWithdrawReward", [import_eth_wallet2.Utils.toString(rewardId)]);
-    return result;
-  }
-  async adminWithdrawReward_call(rewardId) {
-    let result = await this.call("adminWithdrawReward", [import_eth_wallet2.Utils.toString(rewardId)]);
-    return;
-  }
-  async claimVesting_send(params) {
-    let result = await this.send("claimVesting", [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.rewardId), params.user]);
-    return result;
-  }
-  async claimVesting_call(params) {
-    let result = await this.call("claimVesting", [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.rewardId), params.user]);
-    return;
-  }
-  async claimableVesting(params) {
-    let result = await this.call("claimableVesting", [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.rewardId), params.user]);
-    return new import_eth_wallet2.BigNumber(result);
-  }
-  async deny_send(account) {
-    let result = await this.send("deny", [account]);
-    return result;
-  }
-  async deny_call(account) {
-    let result = await this.call("deny", [account]);
-    return;
-  }
-  async deposit_send(params) {
-    let result = await this.send("deposit", [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.amount)]);
-    return result;
-  }
-  async deposit_call(params) {
-    let result = await this.call("deposit", [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.amount)]);
-    return;
-  }
-  async emergencyWithdraw_send(pid) {
-    let result = await this.send("emergencyWithdraw", [import_eth_wallet2.Utils.toString(pid)]);
-    return result;
-  }
-  async emergencyWithdraw_call(pid) {
-    let result = await this.call("emergencyWithdraw", [import_eth_wallet2.Utils.toString(pid)]);
-    return;
-  }
-  async endBlock() {
-    let result = await this.call("endBlock");
-    return new import_eth_wallet2.BigNumber(result);
-  }
-  async getReserveReward(rewardId) {
-    let result = await this.call("getReserveReward", [import_eth_wallet2.Utils.toString(rewardId)]);
-    return new import_eth_wallet2.BigNumber(result);
-  }
-  async harvest_send(params) {
-    let result = await this.send("harvest", [import_eth_wallet2.Utils.toString(params.pid), params.user]);
-    return result;
-  }
-  async harvest_call(params) {
-    let result = await this.call("harvest", [import_eth_wallet2.Utils.toString(params.pid), params.user]);
-    return;
-  }
-  async massUpdatePools_send() {
-    let result = await this.send("massUpdatePools");
-    return result;
-  }
-  async massUpdatePools_call() {
-    let result = await this.call("massUpdatePools");
-    return;
-  }
-  async owners(param1) {
-    let result = await this.call("owners", [param1]);
-    return result;
-  }
-  async pendingReward(params) {
-    let result = await this.call("pendingReward", [import_eth_wallet2.Utils.toString(params.pid), params.user]);
-    return {
-      rewardToken: result.rewardToken,
-      availableNow: result.availableNow.map((e) => new import_eth_wallet2.BigNumber(e)),
-      toBeVested: result.toBeVested.map((e) => new import_eth_wallet2.BigNumber(e)),
-      vestingStart: result.vestingStart.map((e) => new import_eth_wallet2.BigNumber(e)),
-      vestingDuration: result.vestingDuration.map((e) => new import_eth_wallet2.BigNumber(e))
-    };
-  }
-  async poolIdx(param1) {
-    let result = await this.call("poolIdx", [param1]);
-    return new import_eth_wallet2.BigNumber(result);
-  }
-  async poolInfo(param1) {
-    let result = await this.call("poolInfo", [import_eth_wallet2.Utils.toString(param1)]);
-    return {
-      lpToken: result.lpToken,
-      allocPoint: new import_eth_wallet2.BigNumber(result.allocPoint),
-      endBlock: new import_eth_wallet2.BigNumber(result.endBlock),
-      bonusMultiplier: new import_eth_wallet2.BigNumber(result.bonusMultiplier),
-      bonusEndBlock: new import_eth_wallet2.BigNumber(result.bonusEndBlock),
-      rewardDebt: new import_eth_wallet2.BigNumber(result.rewardDebt),
-      lastRewardBlock: new import_eth_wallet2.BigNumber(result.lastRewardBlock),
-      accRewardPerShare: new import_eth_wallet2.BigNumber(result.accRewardPerShare)
-    };
-  }
-  async poolLength() {
-    let result = await this.call("poolLength");
-    return new import_eth_wallet2.BigNumber(result);
-  }
-  async rely_send(account) {
-    let result = await this.send("rely", [account]);
-    return result;
-  }
-  async rely_call(account) {
-    let result = await this.call("rely", [account]);
-    return;
-  }
-  async resetPool_send(pid) {
-    let result = await this.send("resetPool", [import_eth_wallet2.Utils.toString(pid)]);
-    return result;
-  }
-  async resetPool_call(pid) {
-    let result = await this.call("resetPool", [import_eth_wallet2.Utils.toString(pid)]);
-    return;
-  }
-  async rewardIdx(param1) {
-    let result = await this.call("rewardIdx", [param1]);
-    return new import_eth_wallet2.BigNumber(result);
-  }
-  async rewardInfo(param1) {
-    let result = await this.call("rewardInfo", [import_eth_wallet2.Utils.toString(param1)]);
-    return {
-      rewardToken: result.rewardToken,
-      multiplier: new import_eth_wallet2.BigNumber(result.multiplier),
-      vestingRatio: new import_eth_wallet2.BigNumber(result.vestingRatio),
-      vestingStartOnHarvest: result.vestingStartOnHarvest,
-      vestingDuration: new import_eth_wallet2.BigNumber(result.vestingDuration),
-      rewarded: new import_eth_wallet2.BigNumber(result.rewarded),
-      reserve: new import_eth_wallet2.BigNumber(result.reserve)
-    };
-  }
-  async rewardLength() {
-    let result = await this.call("rewardLength");
-    return new import_eth_wallet2.BigNumber(result);
-  }
-  async rewardPerBlock() {
-    let result = await this.call("rewardPerBlock");
-    return new import_eth_wallet2.BigNumber(result);
-  }
-  async setAdmin_send(admin) {
-    let result = await this.send("setAdmin", [admin]);
-    return result;
-  }
-  async setAdmin_call(admin) {
-    let result = await this.call("setAdmin", [admin]);
-    return;
-  }
-  async setPool_send(params) {
-    let result = await this.send("setPool", [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.allocPoint), import_eth_wallet2.Utils.toString(params.endBlock), import_eth_wallet2.Utils.toString(params.bonusMultiplier), import_eth_wallet2.Utils.toString(params.bonusEndBlock), params.withUpdate]);
-    return result;
-  }
-  async setPool_call(params) {
-    let result = await this.call("setPool", [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.allocPoint), import_eth_wallet2.Utils.toString(params.endBlock), import_eth_wallet2.Utils.toString(params.bonusMultiplier), import_eth_wallet2.Utils.toString(params.bonusEndBlock), params.withUpdate]);
-    return;
-  }
-  async setRewards_send(params) {
-    let result = await this.send("setRewards", [import_eth_wallet2.Utils.toString(params.rewardId), import_eth_wallet2.Utils.toString(params.multiplier), import_eth_wallet2.Utils.toString(params.vestingRatio), import_eth_wallet2.Utils.toString(params.vestingDuration)]);
-    return result;
-  }
-  async setRewards_call(params) {
-    let result = await this.call("setRewards", [import_eth_wallet2.Utils.toString(params.rewardId), import_eth_wallet2.Utils.toString(params.multiplier), import_eth_wallet2.Utils.toString(params.vestingRatio), import_eth_wallet2.Utils.toString(params.vestingDuration)]);
-    return;
-  }
-  async setWhiteList_send(params) {
-    let result = await this.send("setWhiteList", [params.who, params.allowed]);
-    return result;
-  }
-  async setWhiteList_call(params) {
-    let result = await this.call("setWhiteList", [params.who, params.allowed]);
-    return;
-  }
-  async startBlock() {
-    let result = await this.call("startBlock");
-    return new import_eth_wallet2.BigNumber(result);
-  }
-  async totalAllocPoint() {
-    let result = await this.call("totalAllocPoint");
-    return new import_eth_wallet2.BigNumber(result);
-  }
-  async updatePool_send(pid) {
-    let result = await this.send("updatePool", [import_eth_wallet2.Utils.toString(pid)]);
-    return result;
-  }
-  async updatePool_call(pid) {
-    let result = await this.call("updatePool", [import_eth_wallet2.Utils.toString(pid)]);
-    return;
-  }
-  async updateSelectedPools_send(pids) {
-    let result = await this.send("updateSelectedPools", [import_eth_wallet2.Utils.toString(pids)]);
-    return result;
-  }
-  async updateSelectedPools_call(pids) {
-    let result = await this.call("updateSelectedPools", [import_eth_wallet2.Utils.toString(pids)]);
-    return;
-  }
-  async userInfo(params) {
-    let result = await this.call("userInfo", [import_eth_wallet2.Utils.toString(params.param1), params.param2]);
-    return {
-      amount: new import_eth_wallet2.BigNumber(result.amount),
-      rewardDebt: new import_eth_wallet2.BigNumber(result.rewardDebt)
-    };
-  }
-  async userRewards(params) {
-    let result = await this.call("userRewards", [import_eth_wallet2.Utils.toString(params.param1), import_eth_wallet2.Utils.toString(params.param2), params.param3]);
-    return {
-      harvested: new import_eth_wallet2.BigNumber(result.harvested),
-      locked: new import_eth_wallet2.BigNumber(result.locked),
-      lockedTill: new import_eth_wallet2.BigNumber(result.lockedTill),
-      lastUpdate: new import_eth_wallet2.BigNumber(result.lastUpdate)
-    };
-  }
-  async whitelisted(param1) {
-    let result = await this.call("whitelisted", [param1]);
-    return result;
-  }
-  async withdraw_send(params) {
-    let result = await this.send("withdraw", [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.amount)]);
-    return result;
-  }
-  async withdraw_call(params) {
-    let result = await this.call("withdraw", [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.amount)]);
-    return;
-  }
   assign() {
-    this.addPool = Object.assign(this.addPool_send, { call: this.addPool_call });
-    this.addRewards = Object.assign(this.addRewards_send, { call: this.addRewards_call });
-    this.adminWithdrawReward = Object.assign(this.adminWithdrawReward_send, { call: this.adminWithdrawReward_call });
-    this.claimVesting = Object.assign(this.claimVesting_send, { call: this.claimVesting_call });
-    this.deny = Object.assign(this.deny_send, { call: this.deny_call });
-    this.deposit = Object.assign(this.deposit_send, { call: this.deposit_call });
-    this.emergencyWithdraw = Object.assign(this.emergencyWithdraw_send, { call: this.emergencyWithdraw_call });
-    this.harvest = Object.assign(this.harvest_send, { call: this.harvest_call });
-    this.massUpdatePools = Object.assign(this.massUpdatePools_send, { call: this.massUpdatePools_call });
-    this.rely = Object.assign(this.rely_send, { call: this.rely_call });
-    this.resetPool = Object.assign(this.resetPool_send, { call: this.resetPool_call });
-    this.setAdmin = Object.assign(this.setAdmin_send, { call: this.setAdmin_call });
-    this.setPool = Object.assign(this.setPool_send, { call: this.setPool_call });
-    this.setRewards = Object.assign(this.setRewards_send, { call: this.setRewards_call });
-    this.setWhiteList = Object.assign(this.setWhiteList_send, { call: this.setWhiteList_call });
-    this.updatePool = Object.assign(this.updatePool_send, { call: this.updatePool_call });
-    this.updateSelectedPools = Object.assign(this.updateSelectedPools_send, { call: this.updateSelectedPools_call });
-    this.withdraw = Object.assign(this.withdraw_send, { call: this.withdraw_call });
+    let admin_call = async () => {
+      let result = await this.call("admin");
+      return result;
+    };
+    this.admin = admin_call;
+    let claimableVestingParams = (params) => [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.rewardId), params.user];
+    let claimableVesting_call = async (params) => {
+      let result = await this.call("claimableVesting", claimableVestingParams(params));
+      return new import_eth_wallet2.BigNumber(result);
+    };
+    this.claimableVesting = claimableVesting_call;
+    let endBlock_call = async () => {
+      let result = await this.call("endBlock");
+      return new import_eth_wallet2.BigNumber(result);
+    };
+    this.endBlock = endBlock_call;
+    let getReserveReward_call = async (rewardId) => {
+      let result = await this.call("getReserveReward", [import_eth_wallet2.Utils.toString(rewardId)]);
+      return new import_eth_wallet2.BigNumber(result);
+    };
+    this.getReserveReward = getReserveReward_call;
+    let owners_call = async (param1) => {
+      let result = await this.call("owners", [param1]);
+      return result;
+    };
+    this.owners = owners_call;
+    let pendingRewardParams = (params) => [import_eth_wallet2.Utils.toString(params.pid), params.user];
+    let pendingReward_call = async (params) => {
+      let result = await this.call("pendingReward", pendingRewardParams(params));
+      return {
+        rewardToken: result.rewardToken,
+        availableNow: result.availableNow.map((e) => new import_eth_wallet2.BigNumber(e)),
+        toBeVested: result.toBeVested.map((e) => new import_eth_wallet2.BigNumber(e)),
+        vestingStart: result.vestingStart.map((e) => new import_eth_wallet2.BigNumber(e)),
+        vestingDuration: result.vestingDuration.map((e) => new import_eth_wallet2.BigNumber(e))
+      };
+    };
+    this.pendingReward = pendingReward_call;
+    let poolIdx_call = async (param1) => {
+      let result = await this.call("poolIdx", [param1]);
+      return new import_eth_wallet2.BigNumber(result);
+    };
+    this.poolIdx = poolIdx_call;
+    let poolInfo_call = async (param1) => {
+      let result = await this.call("poolInfo", [import_eth_wallet2.Utils.toString(param1)]);
+      return {
+        lpToken: result.lpToken,
+        allocPoint: new import_eth_wallet2.BigNumber(result.allocPoint),
+        endBlock: new import_eth_wallet2.BigNumber(result.endBlock),
+        bonusMultiplier: new import_eth_wallet2.BigNumber(result.bonusMultiplier),
+        bonusEndBlock: new import_eth_wallet2.BigNumber(result.bonusEndBlock),
+        rewardDebt: new import_eth_wallet2.BigNumber(result.rewardDebt),
+        lastRewardBlock: new import_eth_wallet2.BigNumber(result.lastRewardBlock),
+        accRewardPerShare: new import_eth_wallet2.BigNumber(result.accRewardPerShare)
+      };
+    };
+    this.poolInfo = poolInfo_call;
+    let poolLength_call = async () => {
+      let result = await this.call("poolLength");
+      return new import_eth_wallet2.BigNumber(result);
+    };
+    this.poolLength = poolLength_call;
+    let rewardIdx_call = async (param1) => {
+      let result = await this.call("rewardIdx", [param1]);
+      return new import_eth_wallet2.BigNumber(result);
+    };
+    this.rewardIdx = rewardIdx_call;
+    let rewardInfo_call = async (param1) => {
+      let result = await this.call("rewardInfo", [import_eth_wallet2.Utils.toString(param1)]);
+      return {
+        rewardToken: result.rewardToken,
+        multiplier: new import_eth_wallet2.BigNumber(result.multiplier),
+        vestingRatio: new import_eth_wallet2.BigNumber(result.vestingRatio),
+        vestingStartOnHarvest: result.vestingStartOnHarvest,
+        vestingDuration: new import_eth_wallet2.BigNumber(result.vestingDuration),
+        rewarded: new import_eth_wallet2.BigNumber(result.rewarded),
+        reserve: new import_eth_wallet2.BigNumber(result.reserve)
+      };
+    };
+    this.rewardInfo = rewardInfo_call;
+    let rewardLength_call = async () => {
+      let result = await this.call("rewardLength");
+      return new import_eth_wallet2.BigNumber(result);
+    };
+    this.rewardLength = rewardLength_call;
+    let rewardPerBlock_call = async () => {
+      let result = await this.call("rewardPerBlock");
+      return new import_eth_wallet2.BigNumber(result);
+    };
+    this.rewardPerBlock = rewardPerBlock_call;
+    let startBlock_call = async () => {
+      let result = await this.call("startBlock");
+      return new import_eth_wallet2.BigNumber(result);
+    };
+    this.startBlock = startBlock_call;
+    let totalAllocPoint_call = async () => {
+      let result = await this.call("totalAllocPoint");
+      return new import_eth_wallet2.BigNumber(result);
+    };
+    this.totalAllocPoint = totalAllocPoint_call;
+    let userInfoParams = (params) => [import_eth_wallet2.Utils.toString(params.param1), params.param2];
+    let userInfo_call = async (params) => {
+      let result = await this.call("userInfo", userInfoParams(params));
+      return {
+        amount: new import_eth_wallet2.BigNumber(result.amount),
+        rewardDebt: new import_eth_wallet2.BigNumber(result.rewardDebt)
+      };
+    };
+    this.userInfo = userInfo_call;
+    let userRewardsParams = (params) => [import_eth_wallet2.Utils.toString(params.param1), import_eth_wallet2.Utils.toString(params.param2), params.param3];
+    let userRewards_call = async (params) => {
+      let result = await this.call("userRewards", userRewardsParams(params));
+      return {
+        harvested: new import_eth_wallet2.BigNumber(result.harvested),
+        locked: new import_eth_wallet2.BigNumber(result.locked),
+        lockedTill: new import_eth_wallet2.BigNumber(result.lockedTill),
+        lastUpdate: new import_eth_wallet2.BigNumber(result.lastUpdate)
+      };
+    };
+    this.userRewards = userRewards_call;
+    let whitelisted_call = async (param1) => {
+      let result = await this.call("whitelisted", [param1]);
+      return result;
+    };
+    this.whitelisted = whitelisted_call;
+    let addPoolParams = (params) => [import_eth_wallet2.Utils.toString(params.allocPoint), params.lpToken, import_eth_wallet2.Utils.toString(params.endBlock), import_eth_wallet2.Utils.toString(params.bonusMultiplier), import_eth_wallet2.Utils.toString(params.bonusEndBlock), params.withUpdate];
+    let addPool_send = async (params) => {
+      let result = await this.send("addPool", addPoolParams(params));
+      return result;
+    };
+    let addPool_call = async (params) => {
+      let result = await this.call("addPool", addPoolParams(params));
+      return;
+    };
+    this.addPool = Object.assign(addPool_send, {
+      call: addPool_call
+    });
+    let addRewardsParams = (params) => [params.rewardToken, import_eth_wallet2.Utils.toString(params.multiplier), import_eth_wallet2.Utils.toString(params.vestingRatio), params.vestingStartOnHarvest, import_eth_wallet2.Utils.toString(params.vestingDuration)];
+    let addRewards_send = async (params) => {
+      let result = await this.send("addRewards", addRewardsParams(params));
+      return result;
+    };
+    let addRewards_call = async (params) => {
+      let result = await this.call("addRewards", addRewardsParams(params));
+      return;
+    };
+    this.addRewards = Object.assign(addRewards_send, {
+      call: addRewards_call
+    });
+    let adminWithdrawReward_send = async (rewardId) => {
+      let result = await this.send("adminWithdrawReward", [import_eth_wallet2.Utils.toString(rewardId)]);
+      return result;
+    };
+    let adminWithdrawReward_call = async (rewardId) => {
+      let result = await this.call("adminWithdrawReward", [import_eth_wallet2.Utils.toString(rewardId)]);
+      return;
+    };
+    this.adminWithdrawReward = Object.assign(adminWithdrawReward_send, {
+      call: adminWithdrawReward_call
+    });
+    let claimVestingParams = (params) => [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.rewardId), params.user];
+    let claimVesting_send = async (params) => {
+      let result = await this.send("claimVesting", claimVestingParams(params));
+      return result;
+    };
+    let claimVesting_call = async (params) => {
+      let result = await this.call("claimVesting", claimVestingParams(params));
+      return;
+    };
+    this.claimVesting = Object.assign(claimVesting_send, {
+      call: claimVesting_call
+    });
+    let deny_send = async (account) => {
+      let result = await this.send("deny", [account]);
+      return result;
+    };
+    let deny_call = async (account) => {
+      let result = await this.call("deny", [account]);
+      return;
+    };
+    this.deny = Object.assign(deny_send, {
+      call: deny_call
+    });
+    let depositParams = (params) => [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.amount)];
+    let deposit_send = async (params) => {
+      let result = await this.send("deposit", depositParams(params));
+      return result;
+    };
+    let deposit_call = async (params) => {
+      let result = await this.call("deposit", depositParams(params));
+      return;
+    };
+    this.deposit = Object.assign(deposit_send, {
+      call: deposit_call
+    });
+    let emergencyWithdraw_send = async (pid) => {
+      let result = await this.send("emergencyWithdraw", [import_eth_wallet2.Utils.toString(pid)]);
+      return result;
+    };
+    let emergencyWithdraw_call = async (pid) => {
+      let result = await this.call("emergencyWithdraw", [import_eth_wallet2.Utils.toString(pid)]);
+      return;
+    };
+    this.emergencyWithdraw = Object.assign(emergencyWithdraw_send, {
+      call: emergencyWithdraw_call
+    });
+    let harvestParams = (params) => [import_eth_wallet2.Utils.toString(params.pid), params.user];
+    let harvest_send = async (params) => {
+      let result = await this.send("harvest", harvestParams(params));
+      return result;
+    };
+    let harvest_call = async (params) => {
+      let result = await this.call("harvest", harvestParams(params));
+      return;
+    };
+    this.harvest = Object.assign(harvest_send, {
+      call: harvest_call
+    });
+    let massUpdatePools_send = async () => {
+      let result = await this.send("massUpdatePools");
+      return result;
+    };
+    let massUpdatePools_call = async () => {
+      let result = await this.call("massUpdatePools");
+      return;
+    };
+    this.massUpdatePools = Object.assign(massUpdatePools_send, {
+      call: massUpdatePools_call
+    });
+    let rely_send = async (account) => {
+      let result = await this.send("rely", [account]);
+      return result;
+    };
+    let rely_call = async (account) => {
+      let result = await this.call("rely", [account]);
+      return;
+    };
+    this.rely = Object.assign(rely_send, {
+      call: rely_call
+    });
+    let resetPool_send = async (pid) => {
+      let result = await this.send("resetPool", [import_eth_wallet2.Utils.toString(pid)]);
+      return result;
+    };
+    let resetPool_call = async (pid) => {
+      let result = await this.call("resetPool", [import_eth_wallet2.Utils.toString(pid)]);
+      return;
+    };
+    this.resetPool = Object.assign(resetPool_send, {
+      call: resetPool_call
+    });
+    let setAdmin_send = async (admin) => {
+      let result = await this.send("setAdmin", [admin]);
+      return result;
+    };
+    let setAdmin_call = async (admin) => {
+      let result = await this.call("setAdmin", [admin]);
+      return;
+    };
+    this.setAdmin = Object.assign(setAdmin_send, {
+      call: setAdmin_call
+    });
+    let setPoolParams = (params) => [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.allocPoint), import_eth_wallet2.Utils.toString(params.endBlock), import_eth_wallet2.Utils.toString(params.bonusMultiplier), import_eth_wallet2.Utils.toString(params.bonusEndBlock), params.withUpdate];
+    let setPool_send = async (params) => {
+      let result = await this.send("setPool", setPoolParams(params));
+      return result;
+    };
+    let setPool_call = async (params) => {
+      let result = await this.call("setPool", setPoolParams(params));
+      return;
+    };
+    this.setPool = Object.assign(setPool_send, {
+      call: setPool_call
+    });
+    let setRewardsParams = (params) => [import_eth_wallet2.Utils.toString(params.rewardId), import_eth_wallet2.Utils.toString(params.multiplier), import_eth_wallet2.Utils.toString(params.vestingRatio), import_eth_wallet2.Utils.toString(params.vestingDuration)];
+    let setRewards_send = async (params) => {
+      let result = await this.send("setRewards", setRewardsParams(params));
+      return result;
+    };
+    let setRewards_call = async (params) => {
+      let result = await this.call("setRewards", setRewardsParams(params));
+      return;
+    };
+    this.setRewards = Object.assign(setRewards_send, {
+      call: setRewards_call
+    });
+    let setWhiteListParams = (params) => [params.who, params.allowed];
+    let setWhiteList_send = async (params) => {
+      let result = await this.send("setWhiteList", setWhiteListParams(params));
+      return result;
+    };
+    let setWhiteList_call = async (params) => {
+      let result = await this.call("setWhiteList", setWhiteListParams(params));
+      return;
+    };
+    this.setWhiteList = Object.assign(setWhiteList_send, {
+      call: setWhiteList_call
+    });
+    let updatePool_send = async (pid) => {
+      let result = await this.send("updatePool", [import_eth_wallet2.Utils.toString(pid)]);
+      return result;
+    };
+    let updatePool_call = async (pid) => {
+      let result = await this.call("updatePool", [import_eth_wallet2.Utils.toString(pid)]);
+      return;
+    };
+    this.updatePool = Object.assign(updatePool_send, {
+      call: updatePool_call
+    });
+    let updateSelectedPools_send = async (pids) => {
+      let result = await this.send("updateSelectedPools", [import_eth_wallet2.Utils.toString(pids)]);
+      return result;
+    };
+    let updateSelectedPools_call = async (pids) => {
+      let result = await this.call("updateSelectedPools", [import_eth_wallet2.Utils.toString(pids)]);
+      return;
+    };
+    this.updateSelectedPools = Object.assign(updateSelectedPools_send, {
+      call: updateSelectedPools_call
+    });
+    let withdrawParams = (params) => [import_eth_wallet2.Utils.toString(params.pid), import_eth_wallet2.Utils.toString(params.amount)];
+    let withdraw_send = async (params) => {
+      let result = await this.send("withdraw", withdrawParams(params));
+      return result;
+    };
+    let withdraw_call = async (params) => {
+      let result = await this.call("withdraw", withdrawParams(params));
+      return;
+    };
+    this.withdraw = Object.assign(withdraw_send, {
+      call: withdraw_call
+    });
   }
 };
 
@@ -707,7 +796,7 @@ var MasterChef = class extends import_eth_wallet3.Contract {
     this.assign();
   }
   deploy(params) {
-    return this._deploy(params.rewardToken, import_eth_wallet3.Utils.toString(params.rewardsPerBlock), import_eth_wallet3.Utils.toString(params.startBlock), import_eth_wallet3.Utils.toString(params.endBlock), import_eth_wallet3.Utils.toString(params.bonusEndBlock));
+    return this.__deploy([params.rewardToken, import_eth_wallet3.Utils.toString(params.rewardsPerBlock), import_eth_wallet3.Utils.toString(params.startBlock), import_eth_wallet3.Utils.toString(params.endBlock), import_eth_wallet3.Utils.toString(params.bonusEndBlock)]);
   }
   parseAuthChangedEvent(receipt) {
     return this.parseEvents(receipt, "AuthChanged").map((e) => this.decodeAuthChangedEvent(e));
@@ -813,196 +902,247 @@ var MasterChef = class extends import_eth_wallet3.Contract {
       _event: event
     };
   }
-  async BONUS_MULTIPLIER() {
-    let result = await this.call("BONUS_MULTIPLIER");
-    return new import_eth_wallet3.BigNumber(result);
-  }
-  async add_send(params) {
-    let result = await this.send("add", [import_eth_wallet3.Utils.toString(params.allocPoint), params.lpToken, params.withUpdate]);
-    return result;
-  }
-  async add_call(params) {
-    let result = await this.call("add", [import_eth_wallet3.Utils.toString(params.allocPoint), params.lpToken, params.withUpdate]);
-    return;
-  }
-  async bonusEndBlock() {
-    let result = await this.call("bonusEndBlock");
-    return new import_eth_wallet3.BigNumber(result);
-  }
-  async deny_send(account) {
-    let result = await this.send("deny", [account]);
-    return result;
-  }
-  async deny_call(account) {
-    let result = await this.call("deny", [account]);
-    return;
-  }
-  async deposit_send(params) {
-    let result = await this.send("deposit", [import_eth_wallet3.Utils.toString(params.pid), import_eth_wallet3.Utils.toString(params.amount)]);
-    return result;
-  }
-  async deposit_call(params) {
-    let result = await this.call("deposit", [import_eth_wallet3.Utils.toString(params.pid), import_eth_wallet3.Utils.toString(params.amount)]);
-    return;
-  }
-  async emergencyWithdraw_send(pid) {
-    let result = await this.send("emergencyWithdraw", [import_eth_wallet3.Utils.toString(pid)]);
-    return result;
-  }
-  async emergencyWithdraw_call(pid) {
-    let result = await this.call("emergencyWithdraw", [import_eth_wallet3.Utils.toString(pid)]);
-    return;
-  }
-  async endBlock() {
-    let result = await this.call("endBlock");
-    return new import_eth_wallet3.BigNumber(result);
-  }
-  async getMultiplier(params) {
-    let result = await this.call("getMultiplier", [import_eth_wallet3.Utils.toString(params.from), import_eth_wallet3.Utils.toString(params.to)]);
-    return new import_eth_wallet3.BigNumber(result);
-  }
-  async harvest_send(params) {
-    let result = await this.send("harvest", [import_eth_wallet3.Utils.toString(params.pid), params.user]);
-    return result;
-  }
-  async harvest_call(params) {
-    let result = await this.call("harvest", [import_eth_wallet3.Utils.toString(params.pid), params.user]);
-    return;
-  }
-  async massUpdatePools_send() {
-    let result = await this.send("massUpdatePools");
-    return result;
-  }
-  async massUpdatePools_call() {
-    let result = await this.call("massUpdatePools");
-    return;
-  }
-  async owners(param1) {
-    let result = await this.call("owners", [param1]);
-    return result;
-  }
-  async pause_send() {
-    let result = await this.send("pause");
-    return result;
-  }
-  async pause_call() {
-    let result = await this.call("pause");
-    return;
-  }
-  async pendingRewards(params) {
-    let result = await this.call("pendingRewards", [import_eth_wallet3.Utils.toString(params.pid), params.user]);
-    return new import_eth_wallet3.BigNumber(result);
-  }
-  async poolInfo(param1) {
-    let result = await this.call("poolInfo", [import_eth_wallet3.Utils.toString(param1)]);
-    return {
-      lpToken: result.lpToken,
-      allocPoint: new import_eth_wallet3.BigNumber(result.allocPoint),
-      lastRewardBlock: new import_eth_wallet3.BigNumber(result.lastRewardBlock),
-      accRewardsPerShare: new import_eth_wallet3.BigNumber(result.accRewardsPerShare)
-    };
-  }
-  async poolLength() {
-    let result = await this.call("poolLength");
-    return new import_eth_wallet3.BigNumber(result);
-  }
-  async rely_send(account) {
-    let result = await this.send("rely", [account]);
-    return result;
-  }
-  async rely_call(account) {
-    let result = await this.call("rely", [account]);
-    return;
-  }
-  async rewardToken(param1) {
-    let result = await this.call("rewardToken", [import_eth_wallet3.Utils.toString(param1)]);
-    return result;
-  }
-  async rewardTokenLength() {
-    let result = await this.call("rewardTokenLength");
-    return new import_eth_wallet3.BigNumber(result);
-  }
-  async rewardsPerBlock() {
-    let result = await this.call("rewardsPerBlock");
-    return new import_eth_wallet3.BigNumber(result);
-  }
-  async set_send(params) {
-    let result = await this.send("set", [import_eth_wallet3.Utils.toString(params.pid), import_eth_wallet3.Utils.toString(params.allocPoint), params.withUpdate]);
-    return result;
-  }
-  async set_call(params) {
-    let result = await this.call("set", [import_eth_wallet3.Utils.toString(params.pid), import_eth_wallet3.Utils.toString(params.allocPoint), params.withUpdate]);
-    return;
-  }
-  async setWhiteList_send(params) {
-    let result = await this.send("setWhiteList", [params.who, params.allowed]);
-    return result;
-  }
-  async setWhiteList_call(params) {
-    let result = await this.call("setWhiteList", [params.who, params.allowed]);
-    return;
-  }
-  async startBlock() {
-    let result = await this.call("startBlock");
-    return new import_eth_wallet3.BigNumber(result);
-  }
-  async totalAllocPoint() {
-    let result = await this.call("totalAllocPoint");
-    return new import_eth_wallet3.BigNumber(result);
-  }
-  async totalPendingRewards() {
-    let result = await this.call("totalPendingRewards");
-    return new import_eth_wallet3.BigNumber(result);
-  }
-  async updatePool_send(pid) {
-    let result = await this.send("updatePool", [import_eth_wallet3.Utils.toString(pid)]);
-    return result;
-  }
-  async updatePool_call(pid) {
-    let result = await this.call("updatePool", [import_eth_wallet3.Utils.toString(pid)]);
-    return;
-  }
-  async updateSelectedPools_send(pids) {
-    let result = await this.send("updateSelectedPools", [import_eth_wallet3.Utils.toString(pids)]);
-    return result;
-  }
-  async updateSelectedPools_call(pids) {
-    let result = await this.call("updateSelectedPools", [import_eth_wallet3.Utils.toString(pids)]);
-    return;
-  }
-  async userInfo(params) {
-    let result = await this.call("userInfo", [import_eth_wallet3.Utils.toString(params.param1), params.param2]);
-    return {
-      amount: new import_eth_wallet3.BigNumber(result.amount),
-      rewardDebt: new import_eth_wallet3.BigNumber(result.rewardDebt)
-    };
-  }
-  async whitelisted(param1) {
-    let result = await this.call("whitelisted", [param1]);
-    return result;
-  }
-  async withdraw_send(params) {
-    let result = await this.send("withdraw", [import_eth_wallet3.Utils.toString(params.pid), import_eth_wallet3.Utils.toString(params.amount)]);
-    return result;
-  }
-  async withdraw_call(params) {
-    let result = await this.call("withdraw", [import_eth_wallet3.Utils.toString(params.pid), import_eth_wallet3.Utils.toString(params.amount)]);
-    return;
-  }
   assign() {
-    this.add = Object.assign(this.add_send, { call: this.add_call });
-    this.deny = Object.assign(this.deny_send, { call: this.deny_call });
-    this.deposit = Object.assign(this.deposit_send, { call: this.deposit_call });
-    this.emergencyWithdraw = Object.assign(this.emergencyWithdraw_send, { call: this.emergencyWithdraw_call });
-    this.harvest = Object.assign(this.harvest_send, { call: this.harvest_call });
-    this.massUpdatePools = Object.assign(this.massUpdatePools_send, { call: this.massUpdatePools_call });
-    this.pause = Object.assign(this.pause_send, { call: this.pause_call });
-    this.rely = Object.assign(this.rely_send, { call: this.rely_call });
-    this.set = Object.assign(this.set_send, { call: this.set_call });
-    this.setWhiteList = Object.assign(this.setWhiteList_send, { call: this.setWhiteList_call });
-    this.updatePool = Object.assign(this.updatePool_send, { call: this.updatePool_call });
-    this.updateSelectedPools = Object.assign(this.updateSelectedPools_send, { call: this.updateSelectedPools_call });
-    this.withdraw = Object.assign(this.withdraw_send, { call: this.withdraw_call });
+    let BONUS_MULTIPLIER_call = async () => {
+      let result = await this.call("BONUS_MULTIPLIER");
+      return new import_eth_wallet3.BigNumber(result);
+    };
+    this.BONUS_MULTIPLIER = BONUS_MULTIPLIER_call;
+    let bonusEndBlock_call = async () => {
+      let result = await this.call("bonusEndBlock");
+      return new import_eth_wallet3.BigNumber(result);
+    };
+    this.bonusEndBlock = bonusEndBlock_call;
+    let endBlock_call = async () => {
+      let result = await this.call("endBlock");
+      return new import_eth_wallet3.BigNumber(result);
+    };
+    this.endBlock = endBlock_call;
+    let getMultiplierParams = (params) => [import_eth_wallet3.Utils.toString(params.from), import_eth_wallet3.Utils.toString(params.to)];
+    let getMultiplier_call = async (params) => {
+      let result = await this.call("getMultiplier", getMultiplierParams(params));
+      return new import_eth_wallet3.BigNumber(result);
+    };
+    this.getMultiplier = getMultiplier_call;
+    let owners_call = async (param1) => {
+      let result = await this.call("owners", [param1]);
+      return result;
+    };
+    this.owners = owners_call;
+    let pendingRewardsParams = (params) => [import_eth_wallet3.Utils.toString(params.pid), params.user];
+    let pendingRewards_call = async (params) => {
+      let result = await this.call("pendingRewards", pendingRewardsParams(params));
+      return new import_eth_wallet3.BigNumber(result);
+    };
+    this.pendingRewards = pendingRewards_call;
+    let poolInfo_call = async (param1) => {
+      let result = await this.call("poolInfo", [import_eth_wallet3.Utils.toString(param1)]);
+      return {
+        lpToken: result.lpToken,
+        allocPoint: new import_eth_wallet3.BigNumber(result.allocPoint),
+        lastRewardBlock: new import_eth_wallet3.BigNumber(result.lastRewardBlock),
+        accRewardsPerShare: new import_eth_wallet3.BigNumber(result.accRewardsPerShare)
+      };
+    };
+    this.poolInfo = poolInfo_call;
+    let poolLength_call = async () => {
+      let result = await this.call("poolLength");
+      return new import_eth_wallet3.BigNumber(result);
+    };
+    this.poolLength = poolLength_call;
+    let rewardToken_call = async (param1) => {
+      let result = await this.call("rewardToken", [import_eth_wallet3.Utils.toString(param1)]);
+      return result;
+    };
+    this.rewardToken = rewardToken_call;
+    let rewardTokenLength_call = async () => {
+      let result = await this.call("rewardTokenLength");
+      return new import_eth_wallet3.BigNumber(result);
+    };
+    this.rewardTokenLength = rewardTokenLength_call;
+    let rewardsPerBlock_call = async () => {
+      let result = await this.call("rewardsPerBlock");
+      return new import_eth_wallet3.BigNumber(result);
+    };
+    this.rewardsPerBlock = rewardsPerBlock_call;
+    let startBlock_call = async () => {
+      let result = await this.call("startBlock");
+      return new import_eth_wallet3.BigNumber(result);
+    };
+    this.startBlock = startBlock_call;
+    let totalAllocPoint_call = async () => {
+      let result = await this.call("totalAllocPoint");
+      return new import_eth_wallet3.BigNumber(result);
+    };
+    this.totalAllocPoint = totalAllocPoint_call;
+    let totalPendingRewards_call = async () => {
+      let result = await this.call("totalPendingRewards");
+      return new import_eth_wallet3.BigNumber(result);
+    };
+    this.totalPendingRewards = totalPendingRewards_call;
+    let userInfoParams = (params) => [import_eth_wallet3.Utils.toString(params.param1), params.param2];
+    let userInfo_call = async (params) => {
+      let result = await this.call("userInfo", userInfoParams(params));
+      return {
+        amount: new import_eth_wallet3.BigNumber(result.amount),
+        rewardDebt: new import_eth_wallet3.BigNumber(result.rewardDebt)
+      };
+    };
+    this.userInfo = userInfo_call;
+    let whitelisted_call = async (param1) => {
+      let result = await this.call("whitelisted", [param1]);
+      return result;
+    };
+    this.whitelisted = whitelisted_call;
+    let addParams = (params) => [import_eth_wallet3.Utils.toString(params.allocPoint), params.lpToken, params.withUpdate];
+    let add_send = async (params) => {
+      let result = await this.send("add", addParams(params));
+      return result;
+    };
+    let add_call = async (params) => {
+      let result = await this.call("add", addParams(params));
+      return;
+    };
+    this.add = Object.assign(add_send, {
+      call: add_call
+    });
+    let deny_send = async (account) => {
+      let result = await this.send("deny", [account]);
+      return result;
+    };
+    let deny_call = async (account) => {
+      let result = await this.call("deny", [account]);
+      return;
+    };
+    this.deny = Object.assign(deny_send, {
+      call: deny_call
+    });
+    let depositParams = (params) => [import_eth_wallet3.Utils.toString(params.pid), import_eth_wallet3.Utils.toString(params.amount)];
+    let deposit_send = async (params) => {
+      let result = await this.send("deposit", depositParams(params));
+      return result;
+    };
+    let deposit_call = async (params) => {
+      let result = await this.call("deposit", depositParams(params));
+      return;
+    };
+    this.deposit = Object.assign(deposit_send, {
+      call: deposit_call
+    });
+    let emergencyWithdraw_send = async (pid) => {
+      let result = await this.send("emergencyWithdraw", [import_eth_wallet3.Utils.toString(pid)]);
+      return result;
+    };
+    let emergencyWithdraw_call = async (pid) => {
+      let result = await this.call("emergencyWithdraw", [import_eth_wallet3.Utils.toString(pid)]);
+      return;
+    };
+    this.emergencyWithdraw = Object.assign(emergencyWithdraw_send, {
+      call: emergencyWithdraw_call
+    });
+    let harvestParams = (params) => [import_eth_wallet3.Utils.toString(params.pid), params.user];
+    let harvest_send = async (params) => {
+      let result = await this.send("harvest", harvestParams(params));
+      return result;
+    };
+    let harvest_call = async (params) => {
+      let result = await this.call("harvest", harvestParams(params));
+      return;
+    };
+    this.harvest = Object.assign(harvest_send, {
+      call: harvest_call
+    });
+    let massUpdatePools_send = async () => {
+      let result = await this.send("massUpdatePools");
+      return result;
+    };
+    let massUpdatePools_call = async () => {
+      let result = await this.call("massUpdatePools");
+      return;
+    };
+    this.massUpdatePools = Object.assign(massUpdatePools_send, {
+      call: massUpdatePools_call
+    });
+    let pause_send = async () => {
+      let result = await this.send("pause");
+      return result;
+    };
+    let pause_call = async () => {
+      let result = await this.call("pause");
+      return;
+    };
+    this.pause = Object.assign(pause_send, {
+      call: pause_call
+    });
+    let rely_send = async (account) => {
+      let result = await this.send("rely", [account]);
+      return result;
+    };
+    let rely_call = async (account) => {
+      let result = await this.call("rely", [account]);
+      return;
+    };
+    this.rely = Object.assign(rely_send, {
+      call: rely_call
+    });
+    let setParams = (params) => [import_eth_wallet3.Utils.toString(params.pid), import_eth_wallet3.Utils.toString(params.allocPoint), params.withUpdate];
+    let set_send = async (params) => {
+      let result = await this.send("set", setParams(params));
+      return result;
+    };
+    let set_call = async (params) => {
+      let result = await this.call("set", setParams(params));
+      return;
+    };
+    this.set = Object.assign(set_send, {
+      call: set_call
+    });
+    let setWhiteListParams = (params) => [params.who, params.allowed];
+    let setWhiteList_send = async (params) => {
+      let result = await this.send("setWhiteList", setWhiteListParams(params));
+      return result;
+    };
+    let setWhiteList_call = async (params) => {
+      let result = await this.call("setWhiteList", setWhiteListParams(params));
+      return;
+    };
+    this.setWhiteList = Object.assign(setWhiteList_send, {
+      call: setWhiteList_call
+    });
+    let updatePool_send = async (pid) => {
+      let result = await this.send("updatePool", [import_eth_wallet3.Utils.toString(pid)]);
+      return result;
+    };
+    let updatePool_call = async (pid) => {
+      let result = await this.call("updatePool", [import_eth_wallet3.Utils.toString(pid)]);
+      return;
+    };
+    this.updatePool = Object.assign(updatePool_send, {
+      call: updatePool_call
+    });
+    let updateSelectedPools_send = async (pids) => {
+      let result = await this.send("updateSelectedPools", [import_eth_wallet3.Utils.toString(pids)]);
+      return result;
+    };
+    let updateSelectedPools_call = async (pids) => {
+      let result = await this.call("updateSelectedPools", [import_eth_wallet3.Utils.toString(pids)]);
+      return;
+    };
+    this.updateSelectedPools = Object.assign(updateSelectedPools_send, {
+      call: updateSelectedPools_call
+    });
+    let withdrawParams = (params) => [import_eth_wallet3.Utils.toString(params.pid), import_eth_wallet3.Utils.toString(params.amount)];
+    let withdraw_send = async (params) => {
+      let result = await this.send("withdraw", withdrawParams(params));
+      return result;
+    };
+    let withdraw_call = async (params) => {
+      let result = await this.call("withdraw", withdrawParams(params));
+      return;
+    };
+    this.withdraw = Object.assign(withdraw_send, {
+      call: withdraw_call
+    });
   }
 };
 
@@ -1039,7 +1179,7 @@ var Redeeming = class extends import_eth_wallet4.Contract {
     this.assign();
   }
   deploy(params) {
-    return this._deploy(params.farming, params.vesting, import_eth_wallet4.Utils.toString(params.rewardPerVesting), params.reward, import_eth_wallet4.Utils.toString(params.convertingRatio), params.admin);
+    return this.__deploy([params.farming, params.vesting, import_eth_wallet4.Utils.toString(params.rewardPerVesting), params.reward, import_eth_wallet4.Utils.toString(params.convertingRatio), params.admin]);
   }
   parseReclaimRemainingRewardEvent(receipt) {
     return this.parseEvents(receipt, "ReclaimRemainingReward").map((e) => this.decodeReclaimRemainingRewardEvent(e));
@@ -1063,87 +1203,110 @@ var Redeeming = class extends import_eth_wallet4.Contract {
       _event: event
     };
   }
-  async admin() {
-    let result = await this.call("admin");
-    return result;
-  }
-  async availableRewardAmount(account) {
-    let result = await this.call("availableRewardAmount", [account]);
-    return {
-      tokens: result.tokens,
-      availableReward: result.availableReward.map((e) => new import_eth_wallet4.BigNumber(e))
-    };
-  }
-  async convertingRatio(params) {
-    let result = await this.call("convertingRatio", [import_eth_wallet4.Utils.toString(params.param1), import_eth_wallet4.Utils.toString(params.param2)]);
-    return new import_eth_wallet4.BigNumber(result);
-  }
-  async farming() {
-    let result = await this.call("farming");
-    return result;
-  }
-  async harvestAndRedeem_send(params) {
-    let result = await this.send("harvestAndRedeem", [params.account, import_eth_wallet4.Utils.toString(params.pid)]);
-    return result;
-  }
-  async harvestAndRedeem_call(params) {
-    let result = await this.call("harvestAndRedeem", [params.account, import_eth_wallet4.Utils.toString(params.pid)]);
-    return;
-  }
-  async putFund_send(params) {
-    let result = await this.send("putFund", [params.token, params.from, import_eth_wallet4.Utils.toString(params.amount)]);
-    return result;
-  }
-  async putFund_call(params) {
-    let result = await this.call("putFund", [params.token, params.from, import_eth_wallet4.Utils.toString(params.amount)]);
-    return;
-  }
-  async reclaimRemainingReward_send() {
-    let result = await this.send("reclaimRemainingReward");
-    return result;
-  }
-  async reclaimRemainingReward_call() {
-    let result = await this.call("reclaimRemainingReward");
-    return;
-  }
-  async redeem_send(params) {
-    let result = await this.send("redeem", [params.account, import_eth_wallet4.Utils.toString(params.vestingIdx)]);
-    return result;
-  }
-  async redeem_call(params) {
-    let result = await this.call("redeem", [params.account, import_eth_wallet4.Utils.toString(params.vestingIdx)]);
-    return;
-  }
-  async redeemAllAvailable_send(account) {
-    let result = await this.send("redeemAllAvailable", [account]);
-    return result;
-  }
-  async redeemAllAvailable_call(account) {
-    let result = await this.call("redeemAllAvailable", [account]);
-    return;
-  }
-  async reward(params) {
-    let result = await this.call("reward", [import_eth_wallet4.Utils.toString(params.param1), import_eth_wallet4.Utils.toString(params.param2)]);
-    return result;
-  }
-  async rewardLength(vestingIdx) {
-    let result = await this.call("rewardLength", [import_eth_wallet4.Utils.toString(vestingIdx)]);
-    return new import_eth_wallet4.BigNumber(result);
-  }
-  async vesting(param1) {
-    let result = await this.call("vesting", [import_eth_wallet4.Utils.toString(param1)]);
-    return result;
-  }
-  async vestingLength() {
-    let result = await this.call("vestingLength");
-    return new import_eth_wallet4.BigNumber(result);
-  }
   assign() {
-    this.harvestAndRedeem = Object.assign(this.harvestAndRedeem_send, { call: this.harvestAndRedeem_call });
-    this.putFund = Object.assign(this.putFund_send, { call: this.putFund_call });
-    this.reclaimRemainingReward = Object.assign(this.reclaimRemainingReward_send, { call: this.reclaimRemainingReward_call });
-    this.redeem = Object.assign(this.redeem_send, { call: this.redeem_call });
-    this.redeemAllAvailable = Object.assign(this.redeemAllAvailable_send, { call: this.redeemAllAvailable_call });
+    let admin_call = async () => {
+      let result = await this.call("admin");
+      return result;
+    };
+    this.admin = admin_call;
+    let availableRewardAmount_call = async (account) => {
+      let result = await this.call("availableRewardAmount", [account]);
+      return {
+        tokens: result.tokens,
+        availableReward: result.availableReward.map((e) => new import_eth_wallet4.BigNumber(e))
+      };
+    };
+    this.availableRewardAmount = availableRewardAmount_call;
+    let convertingRatioParams = (params) => [import_eth_wallet4.Utils.toString(params.param1), import_eth_wallet4.Utils.toString(params.param2)];
+    let convertingRatio_call = async (params) => {
+      let result = await this.call("convertingRatio", convertingRatioParams(params));
+      return new import_eth_wallet4.BigNumber(result);
+    };
+    this.convertingRatio = convertingRatio_call;
+    let farming_call = async () => {
+      let result = await this.call("farming");
+      return result;
+    };
+    this.farming = farming_call;
+    let rewardParams = (params) => [import_eth_wallet4.Utils.toString(params.param1), import_eth_wallet4.Utils.toString(params.param2)];
+    let reward_call = async (params) => {
+      let result = await this.call("reward", rewardParams(params));
+      return result;
+    };
+    this.reward = reward_call;
+    let rewardLength_call = async (vestingIdx) => {
+      let result = await this.call("rewardLength", [import_eth_wallet4.Utils.toString(vestingIdx)]);
+      return new import_eth_wallet4.BigNumber(result);
+    };
+    this.rewardLength = rewardLength_call;
+    let vesting_call = async (param1) => {
+      let result = await this.call("vesting", [import_eth_wallet4.Utils.toString(param1)]);
+      return result;
+    };
+    this.vesting = vesting_call;
+    let vestingLength_call = async () => {
+      let result = await this.call("vestingLength");
+      return new import_eth_wallet4.BigNumber(result);
+    };
+    this.vestingLength = vestingLength_call;
+    let harvestAndRedeemParams = (params) => [params.account, import_eth_wallet4.Utils.toString(params.pid)];
+    let harvestAndRedeem_send = async (params) => {
+      let result = await this.send("harvestAndRedeem", harvestAndRedeemParams(params));
+      return result;
+    };
+    let harvestAndRedeem_call = async (params) => {
+      let result = await this.call("harvestAndRedeem", harvestAndRedeemParams(params));
+      return;
+    };
+    this.harvestAndRedeem = Object.assign(harvestAndRedeem_send, {
+      call: harvestAndRedeem_call
+    });
+    let putFundParams = (params) => [params.token, params.from, import_eth_wallet4.Utils.toString(params.amount)];
+    let putFund_send = async (params) => {
+      let result = await this.send("putFund", putFundParams(params));
+      return result;
+    };
+    let putFund_call = async (params) => {
+      let result = await this.call("putFund", putFundParams(params));
+      return;
+    };
+    this.putFund = Object.assign(putFund_send, {
+      call: putFund_call
+    });
+    let reclaimRemainingReward_send = async () => {
+      let result = await this.send("reclaimRemainingReward");
+      return result;
+    };
+    let reclaimRemainingReward_call = async () => {
+      let result = await this.call("reclaimRemainingReward");
+      return;
+    };
+    this.reclaimRemainingReward = Object.assign(reclaimRemainingReward_send, {
+      call: reclaimRemainingReward_call
+    });
+    let redeemParams = (params) => [params.account, import_eth_wallet4.Utils.toString(params.vestingIdx)];
+    let redeem_send = async (params) => {
+      let result = await this.send("redeem", redeemParams(params));
+      return result;
+    };
+    let redeem_call = async (params) => {
+      let result = await this.call("redeem", redeemParams(params));
+      return;
+    };
+    this.redeem = Object.assign(redeem_send, {
+      call: redeem_call
+    });
+    let redeemAllAvailable_send = async (account) => {
+      let result = await this.send("redeemAllAvailable", [account]);
+      return result;
+    };
+    let redeemAllAvailable_call = async (account) => {
+      let result = await this.call("redeemAllAvailable", [account]);
+      return;
+    };
+    this.redeemAllAvailable = Object.assign(redeemAllAvailable_send, {
+      call: redeemAllAvailable_call
+    });
   }
 };
 
@@ -1204,7 +1367,7 @@ var VestingToken = class extends import_eth_wallet5.Contract {
     this.assign();
   }
   deploy(params) {
-    return this._deploy(params.name, params.symbol, import_eth_wallet5.Utils.toString(params.startReleaseBlock), import_eth_wallet5.Utils.toString(params.endReleaseBlock), import_eth_wallet5.Utils.toString(params.cap), import_eth_wallet5.Utils.toString(params.vestingRatio));
+    return this.__deploy([params.name, params.symbol, import_eth_wallet5.Utils.toString(params.startReleaseBlock), import_eth_wallet5.Utils.toString(params.endReleaseBlock), import_eth_wallet5.Utils.toString(params.cap), import_eth_wallet5.Utils.toString(params.vestingRatio)]);
   }
   parseApprovalEvent(receipt) {
     return this.parseEvents(receipt, "Approval").map((e) => this.decodeApprovalEvent(e));
@@ -1264,213 +1427,270 @@ var VestingToken = class extends import_eth_wallet5.Contract {
       _event: event
     };
   }
-  async allowance(params) {
-    let result = await this.call("allowance", [params.owner, params.spender]);
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async approve_send(params) {
-    let result = await this.send("approve", [params.spender, import_eth_wallet5.Utils.toString(params.amount)]);
-    return result;
-  }
-  async approve_call(params) {
-    let result = await this.call("approve", [params.spender, import_eth_wallet5.Utils.toString(params.amount)]);
-    return result;
-  }
-  async balanceOf(account) {
-    let result = await this.call("balanceOf", [account]);
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async canUnlockAmount(account) {
-    let result = await this.call("canUnlockAmount", [account]);
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async cap() {
-    let result = await this.call("cap");
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async decimals() {
-    let result = await this.call("decimals");
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async decreaseAllowance_send(params) {
-    let result = await this.send("decreaseAllowance", [params.spender, import_eth_wallet5.Utils.toString(params.subtractedValue)]);
-    return result;
-  }
-  async decreaseAllowance_call(params) {
-    let result = await this.call("decreaseAllowance", [params.spender, import_eth_wallet5.Utils.toString(params.subtractedValue)]);
-    return result;
-  }
-  async endReleaseBlock() {
-    let result = await this.call("endReleaseBlock");
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async farming() {
-    let result = await this.call("farming");
-    return result;
-  }
-  async increaseAllowance_send(params) {
-    let result = await this.send("increaseAllowance", [params.spender, import_eth_wallet5.Utils.toString(params.addedValue)]);
-    return result;
-  }
-  async increaseAllowance_call(params) {
-    let result = await this.call("increaseAllowance", [params.spender, import_eth_wallet5.Utils.toString(params.addedValue)]);
-    return result;
-  }
-  async lastUnlockBlock(account) {
-    let result = await this.call("lastUnlockBlock", [account]);
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async lock_send(params) {
-    let result = await this.send("lock", [params.account, import_eth_wallet5.Utils.toString(params.amount)]);
-    return result;
-  }
-  async lock_call(params) {
-    let result = await this.call("lock", [params.account, import_eth_wallet5.Utils.toString(params.amount)]);
-    return;
-  }
-  async lockOf(account) {
-    let result = await this.call("lockOf", [account]);
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async mint_send(params) {
-    let result = await this.send("mint", [params.to, import_eth_wallet5.Utils.toString(params.amount)]);
-    return result;
-  }
-  async mint_call(params) {
-    let result = await this.call("mint", [params.to, import_eth_wallet5.Utils.toString(params.amount)]);
-    return;
-  }
-  async name() {
-    let result = await this.call("name");
-    return result;
-  }
-  async owner() {
-    let result = await this.call("owner");
-    return result;
-  }
-  async redeem_send(params) {
-    let result = await this.send("redeem", [params.account, import_eth_wallet5.Utils.toString(params.amount)]);
-    return result;
-  }
-  async redeem_call(params) {
-    let result = await this.call("redeem", [params.account, import_eth_wallet5.Utils.toString(params.amount)]);
-    return;
-  }
-  async redeeming() {
-    let result = await this.call("redeeming");
-    return result;
-  }
-  async renounceOwnership_send() {
-    let result = await this.send("renounceOwnership");
-    return result;
-  }
-  async renounceOwnership_call() {
-    let result = await this.call("renounceOwnership");
-    return;
-  }
-  async setFarming_send(farming) {
-    let result = await this.send("setFarming", [farming]);
-    return result;
-  }
-  async setFarming_call(farming) {
-    let result = await this.call("setFarming", [farming]);
-    return;
-  }
-  async setRedeeming_send(redeeming) {
-    let result = await this.send("setRedeeming", [redeeming]);
-    return result;
-  }
-  async setRedeeming_call(redeeming) {
-    let result = await this.call("setRedeeming", [redeeming]);
-    return;
-  }
-  async startReleaseBlock() {
-    let result = await this.call("startReleaseBlock");
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async symbol() {
-    let result = await this.call("symbol");
-    return result;
-  }
-  async totalAvailableAmount(account) {
-    let result = await this.call("totalAvailableAmount", [account]);
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async totalBalanceOf(account) {
-    let result = await this.call("totalBalanceOf", [account]);
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async totalLock() {
-    let result = await this.call("totalLock");
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async totalSupply() {
-    let result = await this.call("totalSupply");
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async transfer_send(params) {
-    let result = await this.send("transfer", [params.recipient, import_eth_wallet5.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transfer_call(params) {
-    let result = await this.call("transfer", [params.recipient, import_eth_wallet5.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transferAll_send(to) {
-    let result = await this.send("transferAll", [to]);
-    return result;
-  }
-  async transferAll_call(to) {
-    let result = await this.call("transferAll", [to]);
-    return;
-  }
-  async transferFrom_send(params) {
-    let result = await this.send("transferFrom", [params.sender, params.recipient, import_eth_wallet5.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transferFrom_call(params) {
-    let result = await this.call("transferFrom", [params.sender, params.recipient, import_eth_wallet5.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transferOwnership_send(newOwner) {
-    let result = await this.send("transferOwnership", [newOwner]);
-    return result;
-  }
-  async transferOwnership_call(newOwner) {
-    let result = await this.call("transferOwnership", [newOwner]);
-    return;
-  }
-  async unlock_send() {
-    let result = await this.send("unlock");
-    return result;
-  }
-  async unlock_call() {
-    let result = await this.call("unlock");
-    return;
-  }
-  async unlockedSupply() {
-    let result = await this.call("unlockedSupply");
-    return new import_eth_wallet5.BigNumber(result);
-  }
-  async vestingRatio() {
-    let result = await this.call("vestingRatio");
-    return new import_eth_wallet5.BigNumber(result);
-  }
   assign() {
-    this.approve = Object.assign(this.approve_send, { call: this.approve_call });
-    this.decreaseAllowance = Object.assign(this.decreaseAllowance_send, { call: this.decreaseAllowance_call });
-    this.increaseAllowance = Object.assign(this.increaseAllowance_send, { call: this.increaseAllowance_call });
-    this.lock = Object.assign(this.lock_send, { call: this.lock_call });
-    this.mint = Object.assign(this.mint_send, { call: this.mint_call });
-    this.redeem = Object.assign(this.redeem_send, { call: this.redeem_call });
-    this.renounceOwnership = Object.assign(this.renounceOwnership_send, { call: this.renounceOwnership_call });
-    this.setFarming = Object.assign(this.setFarming_send, { call: this.setFarming_call });
-    this.setRedeeming = Object.assign(this.setRedeeming_send, { call: this.setRedeeming_call });
-    this.transfer = Object.assign(this.transfer_send, { call: this.transfer_call });
-    this.transferAll = Object.assign(this.transferAll_send, { call: this.transferAll_call });
-    this.transferFrom = Object.assign(this.transferFrom_send, { call: this.transferFrom_call });
-    this.transferOwnership = Object.assign(this.transferOwnership_send, { call: this.transferOwnership_call });
-    this.unlock = Object.assign(this.unlock_send, { call: this.unlock_call });
+    let allowanceParams = (params) => [params.owner, params.spender];
+    let allowance_call = async (params) => {
+      let result = await this.call("allowance", allowanceParams(params));
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.allowance = allowance_call;
+    let balanceOf_call = async (account) => {
+      let result = await this.call("balanceOf", [account]);
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.balanceOf = balanceOf_call;
+    let canUnlockAmount_call = async (account) => {
+      let result = await this.call("canUnlockAmount", [account]);
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.canUnlockAmount = canUnlockAmount_call;
+    let cap_call = async () => {
+      let result = await this.call("cap");
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.cap = cap_call;
+    let decimals_call = async () => {
+      let result = await this.call("decimals");
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.decimals = decimals_call;
+    let endReleaseBlock_call = async () => {
+      let result = await this.call("endReleaseBlock");
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.endReleaseBlock = endReleaseBlock_call;
+    let farming_call = async () => {
+      let result = await this.call("farming");
+      return result;
+    };
+    this.farming = farming_call;
+    let lastUnlockBlock_call = async (account) => {
+      let result = await this.call("lastUnlockBlock", [account]);
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.lastUnlockBlock = lastUnlockBlock_call;
+    let lockOf_call = async (account) => {
+      let result = await this.call("lockOf", [account]);
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.lockOf = lockOf_call;
+    let name_call = async () => {
+      let result = await this.call("name");
+      return result;
+    };
+    this.name = name_call;
+    let owner_call = async () => {
+      let result = await this.call("owner");
+      return result;
+    };
+    this.owner = owner_call;
+    let redeeming_call = async () => {
+      let result = await this.call("redeeming");
+      return result;
+    };
+    this.redeeming = redeeming_call;
+    let startReleaseBlock_call = async () => {
+      let result = await this.call("startReleaseBlock");
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.startReleaseBlock = startReleaseBlock_call;
+    let symbol_call = async () => {
+      let result = await this.call("symbol");
+      return result;
+    };
+    this.symbol = symbol_call;
+    let totalAvailableAmount_call = async (account) => {
+      let result = await this.call("totalAvailableAmount", [account]);
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.totalAvailableAmount = totalAvailableAmount_call;
+    let totalBalanceOf_call = async (account) => {
+      let result = await this.call("totalBalanceOf", [account]);
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.totalBalanceOf = totalBalanceOf_call;
+    let totalLock_call = async () => {
+      let result = await this.call("totalLock");
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.totalLock = totalLock_call;
+    let totalSupply_call = async () => {
+      let result = await this.call("totalSupply");
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.totalSupply = totalSupply_call;
+    let unlockedSupply_call = async () => {
+      let result = await this.call("unlockedSupply");
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.unlockedSupply = unlockedSupply_call;
+    let vestingRatio_call = async () => {
+      let result = await this.call("vestingRatio");
+      return new import_eth_wallet5.BigNumber(result);
+    };
+    this.vestingRatio = vestingRatio_call;
+    let approveParams = (params) => [params.spender, import_eth_wallet5.Utils.toString(params.amount)];
+    let approve_send = async (params) => {
+      let result = await this.send("approve", approveParams(params));
+      return result;
+    };
+    let approve_call = async (params) => {
+      let result = await this.call("approve", approveParams(params));
+      return result;
+    };
+    this.approve = Object.assign(approve_send, {
+      call: approve_call
+    });
+    let decreaseAllowanceParams = (params) => [params.spender, import_eth_wallet5.Utils.toString(params.subtractedValue)];
+    let decreaseAllowance_send = async (params) => {
+      let result = await this.send("decreaseAllowance", decreaseAllowanceParams(params));
+      return result;
+    };
+    let decreaseAllowance_call = async (params) => {
+      let result = await this.call("decreaseAllowance", decreaseAllowanceParams(params));
+      return result;
+    };
+    this.decreaseAllowance = Object.assign(decreaseAllowance_send, {
+      call: decreaseAllowance_call
+    });
+    let increaseAllowanceParams = (params) => [params.spender, import_eth_wallet5.Utils.toString(params.addedValue)];
+    let increaseAllowance_send = async (params) => {
+      let result = await this.send("increaseAllowance", increaseAllowanceParams(params));
+      return result;
+    };
+    let increaseAllowance_call = async (params) => {
+      let result = await this.call("increaseAllowance", increaseAllowanceParams(params));
+      return result;
+    };
+    this.increaseAllowance = Object.assign(increaseAllowance_send, {
+      call: increaseAllowance_call
+    });
+    let lockParams = (params) => [params.account, import_eth_wallet5.Utils.toString(params.amount)];
+    let lock_send = async (params) => {
+      let result = await this.send("lock", lockParams(params));
+      return result;
+    };
+    let lock_call = async (params) => {
+      let result = await this.call("lock", lockParams(params));
+      return;
+    };
+    this.lock = Object.assign(lock_send, {
+      call: lock_call
+    });
+    let mintParams = (params) => [params.to, import_eth_wallet5.Utils.toString(params.amount)];
+    let mint_send = async (params) => {
+      let result = await this.send("mint", mintParams(params));
+      return result;
+    };
+    let mint_call = async (params) => {
+      let result = await this.call("mint", mintParams(params));
+      return;
+    };
+    this.mint = Object.assign(mint_send, {
+      call: mint_call
+    });
+    let redeemParams = (params) => [params.account, import_eth_wallet5.Utils.toString(params.amount)];
+    let redeem_send = async (params) => {
+      let result = await this.send("redeem", redeemParams(params));
+      return result;
+    };
+    let redeem_call = async (params) => {
+      let result = await this.call("redeem", redeemParams(params));
+      return;
+    };
+    this.redeem = Object.assign(redeem_send, {
+      call: redeem_call
+    });
+    let renounceOwnership_send = async () => {
+      let result = await this.send("renounceOwnership");
+      return result;
+    };
+    let renounceOwnership_call = async () => {
+      let result = await this.call("renounceOwnership");
+      return;
+    };
+    this.renounceOwnership = Object.assign(renounceOwnership_send, {
+      call: renounceOwnership_call
+    });
+    let setFarming_send = async (farming) => {
+      let result = await this.send("setFarming", [farming]);
+      return result;
+    };
+    let setFarming_call = async (farming) => {
+      let result = await this.call("setFarming", [farming]);
+      return;
+    };
+    this.setFarming = Object.assign(setFarming_send, {
+      call: setFarming_call
+    });
+    let setRedeeming_send = async (redeeming) => {
+      let result = await this.send("setRedeeming", [redeeming]);
+      return result;
+    };
+    let setRedeeming_call = async (redeeming) => {
+      let result = await this.call("setRedeeming", [redeeming]);
+      return;
+    };
+    this.setRedeeming = Object.assign(setRedeeming_send, {
+      call: setRedeeming_call
+    });
+    let transferParams = (params) => [params.recipient, import_eth_wallet5.Utils.toString(params.amount)];
+    let transfer_send = async (params) => {
+      let result = await this.send("transfer", transferParams(params));
+      return result;
+    };
+    let transfer_call = async (params) => {
+      let result = await this.call("transfer", transferParams(params));
+      return result;
+    };
+    this.transfer = Object.assign(transfer_send, {
+      call: transfer_call
+    });
+    let transferAll_send = async (to) => {
+      let result = await this.send("transferAll", [to]);
+      return result;
+    };
+    let transferAll_call = async (to) => {
+      let result = await this.call("transferAll", [to]);
+      return;
+    };
+    this.transferAll = Object.assign(transferAll_send, {
+      call: transferAll_call
+    });
+    let transferFromParams = (params) => [params.sender, params.recipient, import_eth_wallet5.Utils.toString(params.amount)];
+    let transferFrom_send = async (params) => {
+      let result = await this.send("transferFrom", transferFromParams(params));
+      return result;
+    };
+    let transferFrom_call = async (params) => {
+      let result = await this.call("transferFrom", transferFromParams(params));
+      return result;
+    };
+    this.transferFrom = Object.assign(transferFrom_send, {
+      call: transferFrom_call
+    });
+    let transferOwnership_send = async (newOwner) => {
+      let result = await this.send("transferOwnership", [newOwner]);
+      return result;
+    };
+    let transferOwnership_call = async (newOwner) => {
+      let result = await this.call("transferOwnership", [newOwner]);
+      return;
+    };
+    this.transferOwnership = Object.assign(transferOwnership_send, {
+      call: transferOwnership_call
+    });
+    let unlock_send = async () => {
+      let result = await this.send("unlock");
+      return result;
+    };
+    let unlock_call = async () => {
+      let result = await this.call("unlock");
+      return;
+    };
+    this.unlock = Object.assign(unlock_send, {
+      call: unlock_call
+    });
   }
 };
 
@@ -1519,7 +1739,7 @@ var AutoVestingToken = class extends import_eth_wallet6.Contract {
     this.assign();
   }
   deploy(params) {
-    return this._deploy(params.name, params.symbol, import_eth_wallet6.Utils.toString(params.start), import_eth_wallet6.Utils.toString(params.end), import_eth_wallet6.Utils.toString(params.cap), params.farming, params.redeeming);
+    return this.__deploy([params.name, params.symbol, import_eth_wallet6.Utils.toString(params.start), import_eth_wallet6.Utils.toString(params.end), import_eth_wallet6.Utils.toString(params.cap), params.farming, params.redeeming]);
   }
   parseApprovalEvent(receipt) {
     return this.parseEvents(receipt, "Approval").map((e) => this.decodeApprovalEvent(e));
@@ -1567,134 +1787,172 @@ var AutoVestingToken = class extends import_eth_wallet6.Contract {
       _event: event
     };
   }
-  async allowance(params) {
-    let result = await this.call("allowance", [params.owner, params.spender]);
-    return new import_eth_wallet6.BigNumber(result);
-  }
-  async approve_send(params) {
-    let result = await this.send("approve", [params.spender, import_eth_wallet6.Utils.toString(params.amount)]);
-    return result;
-  }
-  async approve_call(params) {
-    let result = await this.call("approve", [params.spender, import_eth_wallet6.Utils.toString(params.amount)]);
-    return result;
-  }
-  async balanceOf(account) {
-    let result = await this.call("balanceOf", [account]);
-    return new import_eth_wallet6.BigNumber(result);
-  }
-  async cap() {
-    let result = await this.call("cap");
-    return new import_eth_wallet6.BigNumber(result);
-  }
-  async decimals() {
-    let result = await this.call("decimals");
-    return new import_eth_wallet6.BigNumber(result);
-  }
-  async decreaseAllowance_send(params) {
-    let result = await this.send("decreaseAllowance", [params.spender, import_eth_wallet6.Utils.toString(params.subtractedValue)]);
-    return result;
-  }
-  async decreaseAllowance_call(params) {
-    let result = await this.call("decreaseAllowance", [params.spender, import_eth_wallet6.Utils.toString(params.subtractedValue)]);
-    return result;
-  }
-  async duration() {
-    let result = await this.call("duration");
-    return new import_eth_wallet6.BigNumber(result);
-  }
-  async end() {
-    let result = await this.call("end");
-    return new import_eth_wallet6.BigNumber(result);
-  }
-  async farming() {
-    let result = await this.call("farming");
-    return result;
-  }
-  async increaseAllowance_send(params) {
-    let result = await this.send("increaseAllowance", [params.spender, import_eth_wallet6.Utils.toString(params.addedValue)]);
-    return result;
-  }
-  async increaseAllowance_call(params) {
-    let result = await this.call("increaseAllowance", [params.spender, import_eth_wallet6.Utils.toString(params.addedValue)]);
-    return result;
-  }
-  async locked(account) {
-    let result = await this.call("locked", [account]);
-    return new import_eth_wallet6.BigNumber(result);
-  }
-  async mint_send(params) {
-    let result = await this.send("mint", [params.account, import_eth_wallet6.Utils.toString(params.amount)]);
-    return result;
-  }
-  async mint_call(params) {
-    let result = await this.call("mint", [params.account, import_eth_wallet6.Utils.toString(params.amount)]);
-    return;
-  }
-  async name() {
-    let result = await this.call("name");
-    return result;
-  }
-  async redeem_send(params) {
-    let result = await this.send("redeem", [params.account, import_eth_wallet6.Utils.toString(params.amount)]);
-    return result;
-  }
-  async redeem_call(params) {
-    let result = await this.call("redeem", [params.account, import_eth_wallet6.Utils.toString(params.amount)]);
-    return;
-  }
-  async redeeming() {
-    let result = await this.call("redeeming");
-    return result;
-  }
-  async start() {
-    let result = await this.call("start");
-    return new import_eth_wallet6.BigNumber(result);
-  }
-  async symbol() {
-    let result = await this.call("symbol");
-    return result;
-  }
-  async totalLocked() {
-    let result = await this.call("totalLocked");
-    return new import_eth_wallet6.BigNumber(result);
-  }
-  async totalSupply() {
-    let result = await this.call("totalSupply");
-    return new import_eth_wallet6.BigNumber(result);
-  }
-  async totalVestable() {
-    let result = await this.call("totalVestable");
-    return new import_eth_wallet6.BigNumber(result);
-  }
-  async transfer_send(params) {
-    let result = await this.send("transfer", [params.recipient, import_eth_wallet6.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transfer_call(params) {
-    let result = await this.call("transfer", [params.recipient, import_eth_wallet6.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transferFrom_send(params) {
-    let result = await this.send("transferFrom", [params.sender, params.recipient, import_eth_wallet6.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transferFrom_call(params) {
-    let result = await this.call("transferFrom", [params.sender, params.recipient, import_eth_wallet6.Utils.toString(params.amount)]);
-    return result;
-  }
-  async vestable(param1) {
-    let result = await this.call("vestable", [param1]);
-    return new import_eth_wallet6.BigNumber(result);
-  }
   assign() {
-    this.approve = Object.assign(this.approve_send, { call: this.approve_call });
-    this.decreaseAllowance = Object.assign(this.decreaseAllowance_send, { call: this.decreaseAllowance_call });
-    this.increaseAllowance = Object.assign(this.increaseAllowance_send, { call: this.increaseAllowance_call });
-    this.mint = Object.assign(this.mint_send, { call: this.mint_call });
-    this.redeem = Object.assign(this.redeem_send, { call: this.redeem_call });
-    this.transfer = Object.assign(this.transfer_send, { call: this.transfer_call });
-    this.transferFrom = Object.assign(this.transferFrom_send, { call: this.transferFrom_call });
+    let allowanceParams = (params) => [params.owner, params.spender];
+    let allowance_call = async (params) => {
+      let result = await this.call("allowance", allowanceParams(params));
+      return new import_eth_wallet6.BigNumber(result);
+    };
+    this.allowance = allowance_call;
+    let balanceOf_call = async (account) => {
+      let result = await this.call("balanceOf", [account]);
+      return new import_eth_wallet6.BigNumber(result);
+    };
+    this.balanceOf = balanceOf_call;
+    let cap_call = async () => {
+      let result = await this.call("cap");
+      return new import_eth_wallet6.BigNumber(result);
+    };
+    this.cap = cap_call;
+    let decimals_call = async () => {
+      let result = await this.call("decimals");
+      return new import_eth_wallet6.BigNumber(result);
+    };
+    this.decimals = decimals_call;
+    let duration_call = async () => {
+      let result = await this.call("duration");
+      return new import_eth_wallet6.BigNumber(result);
+    };
+    this.duration = duration_call;
+    let end_call = async () => {
+      let result = await this.call("end");
+      return new import_eth_wallet6.BigNumber(result);
+    };
+    this.end = end_call;
+    let farming_call = async () => {
+      let result = await this.call("farming");
+      return result;
+    };
+    this.farming = farming_call;
+    let locked_call = async (account) => {
+      let result = await this.call("locked", [account]);
+      return new import_eth_wallet6.BigNumber(result);
+    };
+    this.locked = locked_call;
+    let name_call = async () => {
+      let result = await this.call("name");
+      return result;
+    };
+    this.name = name_call;
+    let redeeming_call = async () => {
+      let result = await this.call("redeeming");
+      return result;
+    };
+    this.redeeming = redeeming_call;
+    let start_call = async () => {
+      let result = await this.call("start");
+      return new import_eth_wallet6.BigNumber(result);
+    };
+    this.start = start_call;
+    let symbol_call = async () => {
+      let result = await this.call("symbol");
+      return result;
+    };
+    this.symbol = symbol_call;
+    let totalLocked_call = async () => {
+      let result = await this.call("totalLocked");
+      return new import_eth_wallet6.BigNumber(result);
+    };
+    this.totalLocked = totalLocked_call;
+    let totalSupply_call = async () => {
+      let result = await this.call("totalSupply");
+      return new import_eth_wallet6.BigNumber(result);
+    };
+    this.totalSupply = totalSupply_call;
+    let totalVestable_call = async () => {
+      let result = await this.call("totalVestable");
+      return new import_eth_wallet6.BigNumber(result);
+    };
+    this.totalVestable = totalVestable_call;
+    let vestable_call = async (param1) => {
+      let result = await this.call("vestable", [param1]);
+      return new import_eth_wallet6.BigNumber(result);
+    };
+    this.vestable = vestable_call;
+    let approveParams = (params) => [params.spender, import_eth_wallet6.Utils.toString(params.amount)];
+    let approve_send = async (params) => {
+      let result = await this.send("approve", approveParams(params));
+      return result;
+    };
+    let approve_call = async (params) => {
+      let result = await this.call("approve", approveParams(params));
+      return result;
+    };
+    this.approve = Object.assign(approve_send, {
+      call: approve_call
+    });
+    let decreaseAllowanceParams = (params) => [params.spender, import_eth_wallet6.Utils.toString(params.subtractedValue)];
+    let decreaseAllowance_send = async (params) => {
+      let result = await this.send("decreaseAllowance", decreaseAllowanceParams(params));
+      return result;
+    };
+    let decreaseAllowance_call = async (params) => {
+      let result = await this.call("decreaseAllowance", decreaseAllowanceParams(params));
+      return result;
+    };
+    this.decreaseAllowance = Object.assign(decreaseAllowance_send, {
+      call: decreaseAllowance_call
+    });
+    let increaseAllowanceParams = (params) => [params.spender, import_eth_wallet6.Utils.toString(params.addedValue)];
+    let increaseAllowance_send = async (params) => {
+      let result = await this.send("increaseAllowance", increaseAllowanceParams(params));
+      return result;
+    };
+    let increaseAllowance_call = async (params) => {
+      let result = await this.call("increaseAllowance", increaseAllowanceParams(params));
+      return result;
+    };
+    this.increaseAllowance = Object.assign(increaseAllowance_send, {
+      call: increaseAllowance_call
+    });
+    let mintParams = (params) => [params.account, import_eth_wallet6.Utils.toString(params.amount)];
+    let mint_send = async (params) => {
+      let result = await this.send("mint", mintParams(params));
+      return result;
+    };
+    let mint_call = async (params) => {
+      let result = await this.call("mint", mintParams(params));
+      return;
+    };
+    this.mint = Object.assign(mint_send, {
+      call: mint_call
+    });
+    let redeemParams = (params) => [params.account, import_eth_wallet6.Utils.toString(params.amount)];
+    let redeem_send = async (params) => {
+      let result = await this.send("redeem", redeemParams(params));
+      return result;
+    };
+    let redeem_call = async (params) => {
+      let result = await this.call("redeem", redeemParams(params));
+      return;
+    };
+    this.redeem = Object.assign(redeem_send, {
+      call: redeem_call
+    });
+    let transferParams = (params) => [params.recipient, import_eth_wallet6.Utils.toString(params.amount)];
+    let transfer_send = async (params) => {
+      let result = await this.send("transfer", transferParams(params));
+      return result;
+    };
+    let transfer_call = async (params) => {
+      let result = await this.call("transfer", transferParams(params));
+      return result;
+    };
+    this.transfer = Object.assign(transfer_send, {
+      call: transfer_call
+    });
+    let transferFromParams = (params) => [params.sender, params.recipient, import_eth_wallet6.Utils.toString(params.amount)];
+    let transferFrom_send = async (params) => {
+      let result = await this.send("transferFrom", transferFromParams(params));
+      return result;
+    };
+    let transferFrom_call = async (params) => {
+      let result = await this.call("transferFrom", transferFromParams(params));
+      return result;
+    };
+    this.transferFrom = Object.assign(transferFrom_send, {
+      call: transferFrom_call
+    });
   }
 };
 
@@ -1750,7 +2008,7 @@ var MasterChefV2 = class extends import_eth_wallet7.Contract {
     this.assign();
   }
   deploy(params) {
-    return this._deploy(import_eth_wallet7.Utils.toString(params.rewardsPerBlock), import_eth_wallet7.Utils.toString(params.startBlock), import_eth_wallet7.Utils.toString(params.endBlock));
+    return this.__deploy([import_eth_wallet7.Utils.toString(params.rewardsPerBlock), import_eth_wallet7.Utils.toString(params.startBlock), import_eth_wallet7.Utils.toString(params.endBlock)]);
   }
   parseAuthChangedEvent(receipt) {
     return this.parseEvents(receipt, "AuthChanged").map((e) => this.decodeAuthChangedEvent(e));
@@ -1859,179 +2117,227 @@ var MasterChefV2 = class extends import_eth_wallet7.Contract {
       _event: event
     };
   }
-  async add_send(params) {
-    let result = await this.send("add", [import_eth_wallet7.Utils.toString(params.allocPoint), params.lpToken]);
-    return result;
-  }
-  async add_call(params) {
-    let result = await this.call("add", [import_eth_wallet7.Utils.toString(params.allocPoint), params.lpToken]);
-    return;
-  }
-  async addRewards_send(rewards) {
-    let result = await this.send("addRewards", [rewards]);
-    return result;
-  }
-  async addRewards_call(rewards) {
-    let result = await this.call("addRewards", [rewards]);
-    return;
-  }
-  async deny_send(account) {
-    let result = await this.send("deny", [account]);
-    return result;
-  }
-  async deny_call(account) {
-    let result = await this.call("deny", [account]);
-    return;
-  }
-  async deposit_send(params) {
-    let result = await this.send("deposit", [import_eth_wallet7.Utils.toString(params.pid), import_eth_wallet7.Utils.toString(params.amount), params.to]);
-    return result;
-  }
-  async deposit_call(params) {
-    let result = await this.call("deposit", [import_eth_wallet7.Utils.toString(params.pid), import_eth_wallet7.Utils.toString(params.amount), params.to]);
-    return;
-  }
-  async emergencyWithdraw_send(params) {
-    let result = await this.send("emergencyWithdraw", [import_eth_wallet7.Utils.toString(params.pid), params.to]);
-    return result;
-  }
-  async emergencyWithdraw_call(params) {
-    let result = await this.call("emergencyWithdraw", [import_eth_wallet7.Utils.toString(params.pid), params.to]);
-    return;
-  }
-  async endBlock() {
-    let result = await this.call("endBlock");
-    return new import_eth_wallet7.BigNumber(result);
-  }
-  async harvest_send(params) {
-    let result = await this.send("harvest", [import_eth_wallet7.Utils.toString(params.pid), params.to]);
-    return result;
-  }
-  async harvest_call(params) {
-    let result = await this.call("harvest", [import_eth_wallet7.Utils.toString(params.pid), params.to]);
-    return;
-  }
-  async lpToken(param1) {
-    let result = await this.call("lpToken", [import_eth_wallet7.Utils.toString(param1)]);
-    return result;
-  }
-  async massUpdatePools_send(pids) {
-    let result = await this.send("massUpdatePools", [import_eth_wallet7.Utils.toString(pids)]);
-    return result;
-  }
-  async massUpdatePools_call(pids) {
-    let result = await this.call("massUpdatePools", [import_eth_wallet7.Utils.toString(pids)]);
-    return;
-  }
-  async owners(param1) {
-    let result = await this.call("owners", [param1]);
-    return result;
-  }
-  async pendingRewards(params) {
-    let result = await this.call("pendingRewards", [import_eth_wallet7.Utils.toString(params.pid), params.user]);
-    return new import_eth_wallet7.BigNumber(result);
-  }
-  async poolInfo(param1) {
-    let result = await this.call("poolInfo", [import_eth_wallet7.Utils.toString(param1)]);
-    return {
-      accRewardsPerShare: new import_eth_wallet7.BigNumber(result.accRewardsPerShare),
-      lastRewardBlock: new import_eth_wallet7.BigNumber(result.lastRewardBlock),
-      allocPoint: new import_eth_wallet7.BigNumber(result.allocPoint)
-    };
-  }
-  async poolLength() {
-    let result = await this.call("poolLength");
-    return new import_eth_wallet7.BigNumber(result);
-  }
-  async rely_send(account) {
-    let result = await this.send("rely", [account]);
-    return result;
-  }
-  async rely_call(account) {
-    let result = await this.call("rely", [account]);
-    return;
-  }
-  async rewardToken(param1) {
-    let result = await this.call("rewardToken", [import_eth_wallet7.Utils.toString(param1)]);
-    return result;
-  }
-  async rewardsPerBlock() {
-    let result = await this.call("rewardsPerBlock");
-    return new import_eth_wallet7.BigNumber(result);
-  }
-  async set_send(params) {
-    let result = await this.send("set", [import_eth_wallet7.Utils.toString(params.pid), import_eth_wallet7.Utils.toString(params.allocPoint)]);
-    return result;
-  }
-  async set_call(params) {
-    let result = await this.call("set", [import_eth_wallet7.Utils.toString(params.pid), import_eth_wallet7.Utils.toString(params.allocPoint)]);
-    return;
-  }
-  async setWhiteList_send(params) {
-    let result = await this.send("setWhiteList", [params.who, params.allowed]);
-    return result;
-  }
-  async setWhiteList_call(params) {
-    let result = await this.call("setWhiteList", [params.who, params.allowed]);
-    return;
-  }
-  async startBlock() {
-    let result = await this.call("startBlock");
-    return new import_eth_wallet7.BigNumber(result);
-  }
-  async totalAllocPoint() {
-    let result = await this.call("totalAllocPoint");
-    return new import_eth_wallet7.BigNumber(result);
-  }
-  async updatePool_send(pid) {
-    let result = await this.send("updatePool", [import_eth_wallet7.Utils.toString(pid)]);
-    return result;
-  }
-  async updatePool_call(pid) {
-    let result = await this.call("updatePool", [import_eth_wallet7.Utils.toString(pid)]);
-    return;
-  }
-  async userInfo(params) {
-    let result = await this.call("userInfo", [import_eth_wallet7.Utils.toString(params.param1), params.param2]);
-    return {
-      amount: new import_eth_wallet7.BigNumber(result.amount),
-      rewardDebt: new import_eth_wallet7.BigNumber(result.rewardDebt)
-    };
-  }
-  async whitelisted(param1) {
-    let result = await this.call("whitelisted", [param1]);
-    return result;
-  }
-  async withdraw_send(params) {
-    let result = await this.send("withdraw", [import_eth_wallet7.Utils.toString(params.pid), import_eth_wallet7.Utils.toString(params.amount), params.to]);
-    return result;
-  }
-  async withdraw_call(params) {
-    let result = await this.call("withdraw", [import_eth_wallet7.Utils.toString(params.pid), import_eth_wallet7.Utils.toString(params.amount), params.to]);
-    return;
-  }
-  async withdrawAndHarvest_send(params) {
-    let result = await this.send("withdrawAndHarvest", [import_eth_wallet7.Utils.toString(params.pid), import_eth_wallet7.Utils.toString(params.amount), params.to]);
-    return result;
-  }
-  async withdrawAndHarvest_call(params) {
-    let result = await this.call("withdrawAndHarvest", [import_eth_wallet7.Utils.toString(params.pid), import_eth_wallet7.Utils.toString(params.amount), params.to]);
-    return;
-  }
   assign() {
-    this.add = Object.assign(this.add_send, { call: this.add_call });
-    this.addRewards = Object.assign(this.addRewards_send, { call: this.addRewards_call });
-    this.deny = Object.assign(this.deny_send, { call: this.deny_call });
-    this.deposit = Object.assign(this.deposit_send, { call: this.deposit_call });
-    this.emergencyWithdraw = Object.assign(this.emergencyWithdraw_send, { call: this.emergencyWithdraw_call });
-    this.harvest = Object.assign(this.harvest_send, { call: this.harvest_call });
-    this.massUpdatePools = Object.assign(this.massUpdatePools_send, { call: this.massUpdatePools_call });
-    this.rely = Object.assign(this.rely_send, { call: this.rely_call });
-    this.set = Object.assign(this.set_send, { call: this.set_call });
-    this.setWhiteList = Object.assign(this.setWhiteList_send, { call: this.setWhiteList_call });
-    this.updatePool = Object.assign(this.updatePool_send, { call: this.updatePool_call });
-    this.withdraw = Object.assign(this.withdraw_send, { call: this.withdraw_call });
-    this.withdrawAndHarvest = Object.assign(this.withdrawAndHarvest_send, { call: this.withdrawAndHarvest_call });
+    let endBlock_call = async () => {
+      let result = await this.call("endBlock");
+      return new import_eth_wallet7.BigNumber(result);
+    };
+    this.endBlock = endBlock_call;
+    let lpToken_call = async (param1) => {
+      let result = await this.call("lpToken", [import_eth_wallet7.Utils.toString(param1)]);
+      return result;
+    };
+    this.lpToken = lpToken_call;
+    let owners_call = async (param1) => {
+      let result = await this.call("owners", [param1]);
+      return result;
+    };
+    this.owners = owners_call;
+    let pendingRewardsParams = (params) => [import_eth_wallet7.Utils.toString(params.pid), params.user];
+    let pendingRewards_call = async (params) => {
+      let result = await this.call("pendingRewards", pendingRewardsParams(params));
+      return new import_eth_wallet7.BigNumber(result);
+    };
+    this.pendingRewards = pendingRewards_call;
+    let poolInfo_call = async (param1) => {
+      let result = await this.call("poolInfo", [import_eth_wallet7.Utils.toString(param1)]);
+      return {
+        accRewardsPerShare: new import_eth_wallet7.BigNumber(result.accRewardsPerShare),
+        lastRewardBlock: new import_eth_wallet7.BigNumber(result.lastRewardBlock),
+        allocPoint: new import_eth_wallet7.BigNumber(result.allocPoint)
+      };
+    };
+    this.poolInfo = poolInfo_call;
+    let poolLength_call = async () => {
+      let result = await this.call("poolLength");
+      return new import_eth_wallet7.BigNumber(result);
+    };
+    this.poolLength = poolLength_call;
+    let rewardToken_call = async (param1) => {
+      let result = await this.call("rewardToken", [import_eth_wallet7.Utils.toString(param1)]);
+      return result;
+    };
+    this.rewardToken = rewardToken_call;
+    let rewardsPerBlock_call = async () => {
+      let result = await this.call("rewardsPerBlock");
+      return new import_eth_wallet7.BigNumber(result);
+    };
+    this.rewardsPerBlock = rewardsPerBlock_call;
+    let startBlock_call = async () => {
+      let result = await this.call("startBlock");
+      return new import_eth_wallet7.BigNumber(result);
+    };
+    this.startBlock = startBlock_call;
+    let totalAllocPoint_call = async () => {
+      let result = await this.call("totalAllocPoint");
+      return new import_eth_wallet7.BigNumber(result);
+    };
+    this.totalAllocPoint = totalAllocPoint_call;
+    let userInfoParams = (params) => [import_eth_wallet7.Utils.toString(params.param1), params.param2];
+    let userInfo_call = async (params) => {
+      let result = await this.call("userInfo", userInfoParams(params));
+      return {
+        amount: new import_eth_wallet7.BigNumber(result.amount),
+        rewardDebt: new import_eth_wallet7.BigNumber(result.rewardDebt)
+      };
+    };
+    this.userInfo = userInfo_call;
+    let whitelisted_call = async (param1) => {
+      let result = await this.call("whitelisted", [param1]);
+      return result;
+    };
+    this.whitelisted = whitelisted_call;
+    let addParams = (params) => [import_eth_wallet7.Utils.toString(params.allocPoint), params.lpToken];
+    let add_send = async (params) => {
+      let result = await this.send("add", addParams(params));
+      return result;
+    };
+    let add_call = async (params) => {
+      let result = await this.call("add", addParams(params));
+      return;
+    };
+    this.add = Object.assign(add_send, {
+      call: add_call
+    });
+    let addRewards_send = async (rewards) => {
+      let result = await this.send("addRewards", [rewards]);
+      return result;
+    };
+    let addRewards_call = async (rewards) => {
+      let result = await this.call("addRewards", [rewards]);
+      return;
+    };
+    this.addRewards = Object.assign(addRewards_send, {
+      call: addRewards_call
+    });
+    let deny_send = async (account) => {
+      let result = await this.send("deny", [account]);
+      return result;
+    };
+    let deny_call = async (account) => {
+      let result = await this.call("deny", [account]);
+      return;
+    };
+    this.deny = Object.assign(deny_send, {
+      call: deny_call
+    });
+    let depositParams = (params) => [import_eth_wallet7.Utils.toString(params.pid), import_eth_wallet7.Utils.toString(params.amount), params.to];
+    let deposit_send = async (params) => {
+      let result = await this.send("deposit", depositParams(params));
+      return result;
+    };
+    let deposit_call = async (params) => {
+      let result = await this.call("deposit", depositParams(params));
+      return;
+    };
+    this.deposit = Object.assign(deposit_send, {
+      call: deposit_call
+    });
+    let emergencyWithdrawParams = (params) => [import_eth_wallet7.Utils.toString(params.pid), params.to];
+    let emergencyWithdraw_send = async (params) => {
+      let result = await this.send("emergencyWithdraw", emergencyWithdrawParams(params));
+      return result;
+    };
+    let emergencyWithdraw_call = async (params) => {
+      let result = await this.call("emergencyWithdraw", emergencyWithdrawParams(params));
+      return;
+    };
+    this.emergencyWithdraw = Object.assign(emergencyWithdraw_send, {
+      call: emergencyWithdraw_call
+    });
+    let harvestParams = (params) => [import_eth_wallet7.Utils.toString(params.pid), params.to];
+    let harvest_send = async (params) => {
+      let result = await this.send("harvest", harvestParams(params));
+      return result;
+    };
+    let harvest_call = async (params) => {
+      let result = await this.call("harvest", harvestParams(params));
+      return;
+    };
+    this.harvest = Object.assign(harvest_send, {
+      call: harvest_call
+    });
+    let massUpdatePools_send = async (pids) => {
+      let result = await this.send("massUpdatePools", [import_eth_wallet7.Utils.toString(pids)]);
+      return result;
+    };
+    let massUpdatePools_call = async (pids) => {
+      let result = await this.call("massUpdatePools", [import_eth_wallet7.Utils.toString(pids)]);
+      return;
+    };
+    this.massUpdatePools = Object.assign(massUpdatePools_send, {
+      call: massUpdatePools_call
+    });
+    let rely_send = async (account) => {
+      let result = await this.send("rely", [account]);
+      return result;
+    };
+    let rely_call = async (account) => {
+      let result = await this.call("rely", [account]);
+      return;
+    };
+    this.rely = Object.assign(rely_send, {
+      call: rely_call
+    });
+    let setParams = (params) => [import_eth_wallet7.Utils.toString(params.pid), import_eth_wallet7.Utils.toString(params.allocPoint)];
+    let set_send = async (params) => {
+      let result = await this.send("set", setParams(params));
+      return result;
+    };
+    let set_call = async (params) => {
+      let result = await this.call("set", setParams(params));
+      return;
+    };
+    this.set = Object.assign(set_send, {
+      call: set_call
+    });
+    let setWhiteListParams = (params) => [params.who, params.allowed];
+    let setWhiteList_send = async (params) => {
+      let result = await this.send("setWhiteList", setWhiteListParams(params));
+      return result;
+    };
+    let setWhiteList_call = async (params) => {
+      let result = await this.call("setWhiteList", setWhiteListParams(params));
+      return;
+    };
+    this.setWhiteList = Object.assign(setWhiteList_send, {
+      call: setWhiteList_call
+    });
+    let updatePool_send = async (pid) => {
+      let result = await this.send("updatePool", [import_eth_wallet7.Utils.toString(pid)]);
+      return result;
+    };
+    let updatePool_call = async (pid) => {
+      let result = await this.call("updatePool", [import_eth_wallet7.Utils.toString(pid)]);
+      return;
+    };
+    this.updatePool = Object.assign(updatePool_send, {
+      call: updatePool_call
+    });
+    let withdrawParams = (params) => [import_eth_wallet7.Utils.toString(params.pid), import_eth_wallet7.Utils.toString(params.amount), params.to];
+    let withdraw_send = async (params) => {
+      let result = await this.send("withdraw", withdrawParams(params));
+      return result;
+    };
+    let withdraw_call = async (params) => {
+      let result = await this.call("withdraw", withdrawParams(params));
+      return;
+    };
+    this.withdraw = Object.assign(withdraw_send, {
+      call: withdraw_call
+    });
+    let withdrawAndHarvestParams = (params) => [import_eth_wallet7.Utils.toString(params.pid), import_eth_wallet7.Utils.toString(params.amount), params.to];
+    let withdrawAndHarvest_send = async (params) => {
+      let result = await this.send("withdrawAndHarvest", withdrawAndHarvestParams(params));
+      return result;
+    };
+    let withdrawAndHarvest_call = async (params) => {
+      let result = await this.call("withdrawAndHarvest", withdrawAndHarvestParams(params));
+      return;
+    };
+    this.withdrawAndHarvest = Object.assign(withdrawAndHarvest_send, {
+      call: withdrawAndHarvest_call
+    });
   }
 };
 
@@ -2067,7 +2373,7 @@ var MockERC20 = class extends import_eth_wallet8.Contract {
     this.assign();
   }
   deploy(params) {
-    return this._deploy(params.symbol, params.name, import_eth_wallet8.Utils.toString(params.initialSupply), import_eth_wallet8.Utils.toString(params.decimals));
+    return this.__deploy([params.symbol, params.name, import_eth_wallet8.Utils.toString(params.initialSupply), import_eth_wallet8.Utils.toString(params.decimals)]);
   }
   parseApprovalEvent(receipt) {
     return this.parseEvents(receipt, "Approval").map((e) => this.decodeApprovalEvent(e));
@@ -2093,85 +2399,110 @@ var MockERC20 = class extends import_eth_wallet8.Contract {
       _event: event
     };
   }
-  async allowance(params) {
-    let result = await this.call("allowance", [params.owner, params.spender]);
-    return new import_eth_wallet8.BigNumber(result);
-  }
-  async approve_send(params) {
-    let result = await this.send("approve", [params.spender, import_eth_wallet8.Utils.toString(params.amount)]);
-    return result;
-  }
-  async approve_call(params) {
-    let result = await this.call("approve", [params.spender, import_eth_wallet8.Utils.toString(params.amount)]);
-    return result;
-  }
-  async balanceOf(account) {
-    let result = await this.call("balanceOf", [account]);
-    return new import_eth_wallet8.BigNumber(result);
-  }
-  async decimals() {
-    let result = await this.call("decimals");
-    return new import_eth_wallet8.BigNumber(result);
-  }
-  async decreaseAllowance_send(params) {
-    let result = await this.send("decreaseAllowance", [params.spender, import_eth_wallet8.Utils.toString(params.subtractedValue)]);
-    return result;
-  }
-  async decreaseAllowance_call(params) {
-    let result = await this.call("decreaseAllowance", [params.spender, import_eth_wallet8.Utils.toString(params.subtractedValue)]);
-    return result;
-  }
-  async increaseAllowance_send(params) {
-    let result = await this.send("increaseAllowance", [params.spender, import_eth_wallet8.Utils.toString(params.addedValue)]);
-    return result;
-  }
-  async increaseAllowance_call(params) {
-    let result = await this.call("increaseAllowance", [params.spender, import_eth_wallet8.Utils.toString(params.addedValue)]);
-    return result;
-  }
-  async mint_send(params) {
-    let result = await this.send("mint", [params.account, import_eth_wallet8.Utils.toString(params.value)]);
-    return result;
-  }
-  async mint_call(params) {
-    let result = await this.call("mint", [params.account, import_eth_wallet8.Utils.toString(params.value)]);
-    return;
-  }
-  async name() {
-    let result = await this.call("name");
-    return result;
-  }
-  async symbol() {
-    let result = await this.call("symbol");
-    return result;
-  }
-  async totalSupply() {
-    let result = await this.call("totalSupply");
-    return new import_eth_wallet8.BigNumber(result);
-  }
-  async transfer_send(params) {
-    let result = await this.send("transfer", [params.recipient, import_eth_wallet8.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transfer_call(params) {
-    let result = await this.call("transfer", [params.recipient, import_eth_wallet8.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transferFrom_send(params) {
-    let result = await this.send("transferFrom", [params.sender, params.recipient, import_eth_wallet8.Utils.toString(params.amount)]);
-    return result;
-  }
-  async transferFrom_call(params) {
-    let result = await this.call("transferFrom", [params.sender, params.recipient, import_eth_wallet8.Utils.toString(params.amount)]);
-    return result;
-  }
   assign() {
-    this.approve = Object.assign(this.approve_send, { call: this.approve_call });
-    this.decreaseAllowance = Object.assign(this.decreaseAllowance_send, { call: this.decreaseAllowance_call });
-    this.increaseAllowance = Object.assign(this.increaseAllowance_send, { call: this.increaseAllowance_call });
-    this.mint = Object.assign(this.mint_send, { call: this.mint_call });
-    this.transfer = Object.assign(this.transfer_send, { call: this.transfer_call });
-    this.transferFrom = Object.assign(this.transferFrom_send, { call: this.transferFrom_call });
+    let allowanceParams = (params) => [params.owner, params.spender];
+    let allowance_call = async (params) => {
+      let result = await this.call("allowance", allowanceParams(params));
+      return new import_eth_wallet8.BigNumber(result);
+    };
+    this.allowance = allowance_call;
+    let balanceOf_call = async (account) => {
+      let result = await this.call("balanceOf", [account]);
+      return new import_eth_wallet8.BigNumber(result);
+    };
+    this.balanceOf = balanceOf_call;
+    let decimals_call = async () => {
+      let result = await this.call("decimals");
+      return new import_eth_wallet8.BigNumber(result);
+    };
+    this.decimals = decimals_call;
+    let name_call = async () => {
+      let result = await this.call("name");
+      return result;
+    };
+    this.name = name_call;
+    let symbol_call = async () => {
+      let result = await this.call("symbol");
+      return result;
+    };
+    this.symbol = symbol_call;
+    let totalSupply_call = async () => {
+      let result = await this.call("totalSupply");
+      return new import_eth_wallet8.BigNumber(result);
+    };
+    this.totalSupply = totalSupply_call;
+    let approveParams = (params) => [params.spender, import_eth_wallet8.Utils.toString(params.amount)];
+    let approve_send = async (params) => {
+      let result = await this.send("approve", approveParams(params));
+      return result;
+    };
+    let approve_call = async (params) => {
+      let result = await this.call("approve", approveParams(params));
+      return result;
+    };
+    this.approve = Object.assign(approve_send, {
+      call: approve_call
+    });
+    let decreaseAllowanceParams = (params) => [params.spender, import_eth_wallet8.Utils.toString(params.subtractedValue)];
+    let decreaseAllowance_send = async (params) => {
+      let result = await this.send("decreaseAllowance", decreaseAllowanceParams(params));
+      return result;
+    };
+    let decreaseAllowance_call = async (params) => {
+      let result = await this.call("decreaseAllowance", decreaseAllowanceParams(params));
+      return result;
+    };
+    this.decreaseAllowance = Object.assign(decreaseAllowance_send, {
+      call: decreaseAllowance_call
+    });
+    let increaseAllowanceParams = (params) => [params.spender, import_eth_wallet8.Utils.toString(params.addedValue)];
+    let increaseAllowance_send = async (params) => {
+      let result = await this.send("increaseAllowance", increaseAllowanceParams(params));
+      return result;
+    };
+    let increaseAllowance_call = async (params) => {
+      let result = await this.call("increaseAllowance", increaseAllowanceParams(params));
+      return result;
+    };
+    this.increaseAllowance = Object.assign(increaseAllowance_send, {
+      call: increaseAllowance_call
+    });
+    let mintParams = (params) => [params.account, import_eth_wallet8.Utils.toString(params.value)];
+    let mint_send = async (params) => {
+      let result = await this.send("mint", mintParams(params));
+      return result;
+    };
+    let mint_call = async (params) => {
+      let result = await this.call("mint", mintParams(params));
+      return;
+    };
+    this.mint = Object.assign(mint_send, {
+      call: mint_call
+    });
+    let transferParams = (params) => [params.recipient, import_eth_wallet8.Utils.toString(params.amount)];
+    let transfer_send = async (params) => {
+      let result = await this.send("transfer", transferParams(params));
+      return result;
+    };
+    let transfer_call = async (params) => {
+      let result = await this.call("transfer", transferParams(params));
+      return result;
+    };
+    this.transfer = Object.assign(transfer_send, {
+      call: transfer_call
+    });
+    let transferFromParams = (params) => [params.sender, params.recipient, import_eth_wallet8.Utils.toString(params.amount)];
+    let transferFrom_send = async (params) => {
+      let result = await this.send("transferFrom", transferFromParams(params));
+      return result;
+    };
+    let transferFrom_call = async (params) => {
+      let result = await this.call("transferFrom", transferFromParams(params));
+      return result;
+    };
+    this.transferFrom = Object.assign(transferFrom_send, {
+      call: transferFrom_call
+    });
   }
 };
 
